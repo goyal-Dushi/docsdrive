@@ -1,0 +1,1 @@
+export { EditBillDetails } from "./EditBillDetails";

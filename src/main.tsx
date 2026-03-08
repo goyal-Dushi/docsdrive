@@ -1,16 +1,28 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import '@tailwindcss/vite'
-import './index.css'
-import App from './App.tsx'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
 
-const rootElement = document.getElementById('root')
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			retry: 1,
+			staleTime: 5 * 60 * 1000, // 5 minutes
+		},
+	},
+});
+
+const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-  throw new Error('Root element not found')
+	throw new Error("Root element not found");
 }
+
 createRoot(rootElement).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+	<StrictMode>
+		<QueryClientProvider client={queryClient}>
+			<App />
+		</QueryClientProvider>
+	</StrictMode>,
+);
