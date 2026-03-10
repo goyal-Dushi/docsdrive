@@ -1,6 +1,5 @@
+import { fetchAuthSession } from "aws-amplify/auth";
 import xior, { type XiorError, type XiorInstance } from "xior";
-
-// ─── Normalized Error ─────────────────────────────────────────────────────────
 
 export interface HttpError {
 	message: string;
@@ -36,27 +35,36 @@ function normalizeError(err: unknown): HttpError {
 	};
 }
 
-// ─── Auth HTTP Instance (with interceptors) ───────────────────────────────────
+const env = import.meta.env.MODE;
 
 const authHttp: XiorInstance = xior.create({
-	baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+	baseURL:
+		env === "development"
+			? import.meta.env.VITE_API_GATEWAY_DOMAIN_DEV
+			: import.meta.env.VITE_API_GATEWAY_DOMAIN_PROD,
 	timeout: 30_000,
 	headers: {
 		"Content-Type": "application/json",
 	},
 });
 
-// Request interceptor: attach bearer token from localStorage
-authHttp.interceptors.request.use((config) => {
-	const token = localStorage.getItem("accessToken");
-	if (token) {
-		config.headers = config.headers ?? {};
-		config.headers.Authorization = `Bearer ${token}`;
+authHttp.interceptors.request.use(async (config) => {
+	try {
+		const idToken = (await fetchAuthSession()).tokens?.idToken?.toString();
+		if (idToken) {
+			config.headers = config.headers ?? {};
+			config.headers.Authorization = `Bearer ${idToken}`;
+		}
+
+		if (!idToken) {
+			console.error("Id token not found");
+		}
+	} catch (err) {
+		console.error("Error fetching auth session: ", err);
 	}
 	return config;
 });
 
-// Response interceptor: normalize errors
 authHttp.interceptors.response.use(
 	(response) => response,
 	(error: unknown) => {
@@ -64,13 +72,9 @@ authHttp.interceptors.response.use(
 	},
 );
 
-// ─── Plain S3 Instance (NO interceptors, NO auth header) ─────────────────────
-
 export const s3Http: XiorInstance = xior.create({
 	timeout: 60_000,
 });
-
-// ─── Exports ──────────────────────────────────────────────────────────────────
 
 export const http = authHttp;
 
