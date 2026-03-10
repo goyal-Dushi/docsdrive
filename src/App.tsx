@@ -1,14 +1,18 @@
 import { Route, Switch, useLocation } from "wouter";
 import { AppHeader } from "@/components/header";
 import { HeaderProvider } from "@/context/HeaderContext";
-import BillDetailsPage from "@/pages/BillDetails";
-import ChatPage from "@/pages/Chat";
-import DashboardPage from "@/pages/Dashboard";
-import LoginPage from "@/pages/Login";
-import SignupPage from "@/pages/Signup";
-import UploadPage from "@/pages/Upload";
+import {
+	BillDetailsPage,
+	ChatPage,
+	ConfirmSignupPage,
+	DashboardPage,
+	LoginPage,
+	SignupPage,
+	UploadPage,
+} from "@/pages";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
-const AUTH_ROUTES = ["/login", "/signup"];
+const AUTH_ROUTES = ["/login", "/signup", "/confirm-signup"];
 
 function Layout() {
 	const [location] = useLocation();
@@ -20,10 +24,14 @@ function Layout() {
 			<Switch>
 				<Route path="/login" component={LoginPage} />
 				<Route path="/signup" component={SignupPage} />
-				<Route path="/bills/:id" component={BillDetailsPage} />
-				<Route path="/chat/:billNo" component={ChatPage} />
-				<Route path="/upload" component={UploadPage} />
-				<Route path="/" component={DashboardPage} />
+				<Route path="/confirm-signup" component={ConfirmSignupPage} />
+				<ProtectedRoute>
+					<Route path="/bills/:id" component={BillDetailsPage} />
+					<Route path="/chat/:billNo" component={ChatPage} />
+					<Route path="/upload" component={UploadPage} />
+					<Route path="/dashboard" component={DashboardPage} />
+					<Route path="/" component={DashboardPage} />
+				</ProtectedRoute>
 			</Switch>
 		</>
 	);

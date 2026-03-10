@@ -1,10 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
+import { signIn } from "aws-amplify/auth";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { HomeSvg } from "@/assets";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/form";
-import { http } from "@/hooks/useHttp";
+import { AuthLogo } from "@/components/header";
 import type { ValidationRule } from "@/types";
 
 interface LoginResponse {
@@ -52,6 +51,7 @@ const LOGIN_FIELDS: FieldConfig[] = [
 
 export default function LoginPage() {
 	const [, navigate] = useLocation();
+	const [isPending, setIsPending] = useState(false);
 	const [form, setForm] = useState<Record<string, string>>({
 		email: "",
 		password: "",
@@ -68,58 +68,42 @@ export default function LoginPage() {
 
 	const isFormValid = Object.values(fieldValidity).every(Boolean);
 
-	const mutation = useMutation({
-		mutationFn: () =>
-			http
-				.post<LoginResponse>("/auth/login", {
-					email: form.email,
-					password: form.password,
-				})
-				.then((r) => r.data),
-		onSuccess: (data) => {
-			localStorage.setItem("accessToken", data.accessToken);
-			navigate("/");
-		},
-	});
-
 	const handleValidationChange = (name: string, valid: boolean) => {
 		setFieldValidity((prev) => ({ ...prev, [name]: valid }));
 	};
 
-	const handleSubmit = (e: React.SyntheticEvent) => {
+	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
 		if (!isFormValid) return;
-		mutation.mutate();
+
+		try {
+			setIsPending(true);
+			await signIn({
+				username: form.email,
+				password: form.password,
+			});
+			setIsPending(false);
+			navigate("/dashboard");
+		} catch (err) {
+			setIsPending(false);
+			console.error("Error during sign in : ", err);
+		}
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-(--color-bg-page) px-4 py-12">
+		<div className="min-h-screen flex items-center justify-center bg-bg-page px-4 py-12">
 			<div className="w-full max-w-md">
 				{/* Logo */}
-				<div className="flex items-center gap-2.5 mb-8 justify-center">
-					<div className="w-9 h-9 rounded-lg bg-(--color-primary) flex items-center justify-center">
-						<HomeSvg className="w-5 h-5 text-white" />
-					</div>
-					<span className="text-xl font-bold text-(--color-text-heading)">
-						Digital Home Binder
-					</span>
-				</div>
+				<AuthLogo />
 
 				{/* Card */}
-				<div className="bg-(--color-bg-card) rounded-2xl shadow-sm border border-(--color-border) p-8">
-					<h1 className="text-2xl font-bold text-(--color-text-heading) mb-1">
+				<div className="bg-bg-card rounded-2xl shadow-sm border border-border p-8">
+					<h1 className="text-2xl font-bold text-text-heading mb-1">
 						Welcome back
 					</h1>
-					<p className="text-sm text-(--color-text-muted) mb-6">
+					<p className="text-sm text-text-muted mb-6">
 						Sign in to your account to continue
 					</p>
-
-					{mutation.isError && (
-						<div className="mb-4 p-3 rounded-lg bg-(--color-error-bg) border border-(--color-error) text-(--color-error) text-sm">
-							{(mutation.error as { message?: string })?.message ??
-								"Login failed. Please try again."}
-						</div>
-					)}
 
 					<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 						{LOGIN_FIELDS.map((field) => (
@@ -138,20 +122,20 @@ export default function LoginPage() {
 						))}
 
 						<Button
-							label={mutation.isPending ? "Signing in…" : "Sign In"}
+							label={isPending ? "Signing in…" : "Sign In"}
 							type="submit"
 							variant="primary"
 							fullWidth
-							disabled={!isFormValid || mutation.isPending}
+							disabled={!isFormValid || isPending}
 						/>
 					</form>
 
-					<p className="mt-6 text-center text-sm text-(--color-text-muted)">
+					<p className="mt-6 text-center text-sm text-text-muted">
 						Don't have an account?{" "}
 						<button
 							type="button"
 							onClick={() => navigate("/signup")}
-							className="text-(--color-primary) font-medium hover:underline cursor-pointer"
+							className="text-primary font-medium hover:underline cursor-pointer"
 						>
 							Sign up
 						</button>

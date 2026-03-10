@@ -3,11 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/button";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { StatusBadge } from "./components";
 
-// ─── Dummy WS URL (replace with real endpoint) ────────────────────────────────
 const WS_BASE_URL = import.meta.env.VITE_WS_URL || "wss://echo.websocket.org";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface BillReference {
 	billNo: string;
@@ -16,36 +14,12 @@ interface BillReference {
 	uname: string;
 }
 
-// ─── Dummy bill reference lookup ──────────────────────────────────────────────
 const DUMMY_REF: BillReference = {
 	billNo: "1",
 	invoice: "Invoice #01/15/2023",
 	products: "Samsung Front Load Washer, Samsung Heat Pump Dryer",
 	uname: "user",
 };
-
-// ─── Status Badge ─────────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: string }) {
-	const colors: Record<string, string> = {
-		connected:
-			"bg-[var(--color-success-bg)] text-[var(--color-success)] border-[var(--color-success)]",
-		connecting:
-			"bg-[var(--color-warning-bg)] text-[var(--color-warning)] border-[var(--color-warning)]",
-		disconnected: "bg-gray-100 text-gray-500 border-gray-300",
-		error:
-			"bg-[var(--color-error-bg)] text-[var(--color-error)] border-[var(--color-error)]",
-	};
-	return (
-		<span
-			className={clsx(
-				"text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border shadow-sm",
-				colors[status] ?? colors.disconnected,
-			)}
-		>
-			{status}
-		</span>
-	);
-}
 
 export default function ChatPage() {
 	const params = useParams<{ billNo: string }>();
