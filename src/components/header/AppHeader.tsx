@@ -1,3 +1,4 @@
+import { signOut } from "aws-amplify/auth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/button";
 import { useHeaderConfig } from "@/context/HeaderContext";
@@ -6,13 +7,17 @@ export function AppHeader() {
 	const [, navigate] = useLocation();
 	const { config } = useHeaderConfig();
 
-	const handleLogout = () => {
-		localStorage.removeItem("accessToken");
-		navigate("/login");
+	const handleLogout = async () => {
+		try {
+			await signOut();
+			navigate("/login");
+		} catch (err) {
+			console.error("Error logging out: ", err);
+		}
 	};
 
 	return (
-		<header className="sticky top-0 z-10 bg-[var(--color-bg-card)] border-b border-[var(--color-border)] px-4 sm:px-6 lg:px-8">
+		<header className="sticky top-0 z-10 bg-bg-card border-b border-border px-4 sm:px-6 lg:px-8">
 			<div className="max-w-7xl mx-auto h-14 flex items-center justify-between">
 				{/* Logo + title */}
 				<button
@@ -20,7 +25,7 @@ export function AppHeader() {
 					onClick={() => navigate("/")}
 					className="flex items-center gap-2.5 cursor-pointer"
 				>
-					<div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center">
+					<div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
 						<svg
 							width="16"
 							height="16"
@@ -35,7 +40,7 @@ export function AppHeader() {
 							<polyline points="9 22 9 12 15 12 15 22" />
 						</svg>
 					</div>
-					<span className="font-bold text-[var(--color-text-heading)] hidden sm:block">
+					<span className="font-bold text-text-heading hidden sm:block">
 						{config.title ?? "Digital Home Binder"}
 					</span>
 				</button>

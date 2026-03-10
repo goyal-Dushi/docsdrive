@@ -1,3 +1,3 @@
-export { BillCard } from "./BillCard";
-export { BillCardSkeleton } from "./BillCardSkeleton";
+export { default as BillCard } from "./BillCard";
+export { default as BillCardSkeleton } from "./BillCardSkeleton";
 export type { Bill } from "./types";

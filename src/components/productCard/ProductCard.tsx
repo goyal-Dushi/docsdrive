@@ -11,8 +11,8 @@ export function ProductCard({ product, onEdit }: ProductCardProps) {
 	const [rawExpanded, setRawExpanded] = useState(false);
 
 	return (
-		<div className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border)] p-6 shadow-xs hover:shadow-sm transition-shadow">
-			<div className="flex items-center justify-between pb-5 mb-5 border-b border-[var(--color-border)]">
+		<div className="bg-bg-card rounded-2xl border border-border p-6 shadow-xs hover:shadow-sm transition-shadow">
+			<div className="flex items-center justify-between pb-5 mb-5 border-b border-border">
 				<div className="flex items-center gap-4">
 					<div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 border border-[var(--color-border)]">
 						{product.image ? (

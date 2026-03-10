@@ -1,8 +1,14 @@
 export interface Bill {
-	id: string;
 	vendor: string;
-	date: string;
-	description: string;
-	status: "DONE" | "PROCESSING" | "FAILED";
-	hasWarranty: boolean;
+	purchaseDate: string | null;
+	billNo: string;
+	status: string;
+	total_products: number;
+	products: BillProduct[];
+	lastUpdated: string;
+}
+
+export interface BillProduct {
+	productName: string;
+	warrantyEnd: string;
 }
