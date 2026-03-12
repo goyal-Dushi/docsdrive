@@ -17,7 +17,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = (props) => {
 			try {
 				const session = await fetchAuthSession();
 				if (session.tokens?.idToken) {
-					console.log("Auth session fetched successfully", session);
 					setAuthStatus("auth");
 				} else {
 					setAuthStatus("unauth");
