@@ -5,6 +5,7 @@ export function Button({
 	label,
 	variant = "primary",
 	icon,
+	type,
 	iconPosition = "start",
 	onClick,
 	disabled = false,
@@ -23,7 +24,7 @@ export function Button({
 
 	return (
 		<button
-			type="button"
+			type={type || "button"}
 			onClick={onClick}
 			disabled={disabled}
 			className={clsx(
