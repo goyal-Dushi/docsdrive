@@ -43,14 +43,18 @@ const authHttp: XiorInstance = xior.create({
 			? import.meta.env.VITE_API_GATEWAY_DOMAIN_DEV
 			: import.meta.env.VITE_API_GATEWAY_DOMAIN_PROD,
 	timeout: 30_000,
-	headers: {
-		"Content-Type": "application/json",
-	},
+	headers: {},
 });
 
 authHttp.interceptors.request.use(async (config) => {
 	try {
 		const idToken = (await fetchAuthSession()).tokens?.idToken?.toString();
+		const method = config.method?.toUpperCase() || "GET";
+		if (method !== "GET") {
+			config.headers = config.headers ?? {};
+			config.headers["Content-Type"] = "application/json";
+		}
+
 		if (idToken) {
 			config.headers = config.headers ?? {};
 			config.headers.Authorization = `Bearer ${idToken}`;
@@ -104,8 +108,8 @@ export async function uploadToS3(
 		method: "PUT",
 		url: presignedUrl,
 		data: file,
-		headers: {
-			"Content-Type": file.type,
-		},
+		// headers: {
+		// 	"Content-Type": file.type,
+		// },
 	});
 }
