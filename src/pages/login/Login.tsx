@@ -1,9 +1,10 @@
-import { signIn } from "aws-amplify/auth";
+import { AuthError, signIn } from "aws-amplify/auth";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/form";
 import { AuthLogo } from "@/components/header";
+import { useToast } from "@/hooks/useToast";
 import type { ValidationRule } from "@/types";
 
 interface LoginResponse {
@@ -51,6 +52,8 @@ const LOGIN_FIELDS: FieldConfig[] = [
 
 export default function LoginPage() {
 	const [, navigate] = useLocation();
+	const { showToast } = useToast();
+
 	const [isPending, setIsPending] = useState(false);
 	const [form, setForm] = useState<Record<string, string>>({
 		email: "",
@@ -82,11 +85,16 @@ export default function LoginPage() {
 				username: form.email,
 				password: form.password,
 			});
-			setIsPending(false);
 			navigate("/dashboard");
 		} catch (err) {
+			if (err instanceof AuthError && err?.name === "NotAuthorizedException") {
+				showToast("error", "Incorrect username or password!");
+			} else {
+				showToast("error", "Something went wrong, please try again later.");
+				console.error("Error during sign in : ", err);
+			}
+		} finally {
 			setIsPending(false);
-			console.error("Error during sign in : ", err);
 		}
 	};
 

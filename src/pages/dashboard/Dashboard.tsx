@@ -5,6 +5,7 @@ import type { Bill } from "@/components/billCard";
 import { BillCard, BillCardSkeleton } from "@/components/billCard";
 import { Button } from "@/components/button";
 import { http } from "@/hooks/useHttp";
+import PendingBillAnalysisBtn from "./PendingBillAnalysisBtn";
 
 interface BillResponse {
 	data: Bill[];
@@ -69,6 +70,7 @@ export default function DashboardPage() {
 						className="py-4 px-6 text-blue-500 shadow-xl shadow-blue-500/20"
 					/>
 				</div>
+				<PendingBillAnalysisBtn />
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 					{bills.map((bill) => (

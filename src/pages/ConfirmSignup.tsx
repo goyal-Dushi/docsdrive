@@ -56,9 +56,10 @@ export default function ConfirmSignupPage() {
 			if (isSignUpComplete) {
 				navigate("/login");
 			}
-			setIsProcessing(false);
 		} catch (err) {
 			console.error("Error while validating code: ", err);
+		} finally {
+			setIsProcessing(false);
 		}
 	};
 
@@ -69,10 +70,10 @@ export default function ConfirmSignupPage() {
 				username: email,
 			});
 			showToast("success", "Confirmation code resent to your email.");
-			setIsResending(false);
 		} catch (err) {
 			console.error("Error resending code: ", err);
 			showToast("error", "Failed to resend code. Please try again.");
+		} finally {
 			setIsResending(false);
 		}
 	};

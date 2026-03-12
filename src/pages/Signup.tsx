@@ -1,10 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { AuthError, signUp } from "aws-amplify/auth";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { HomeIcon } from "@/assets";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/form";
-import { http } from "@/hooks/useHttp";
+import { useToast } from "@/hooks/useToast";
 import type { ValidationRule } from "@/types";
 
 interface FieldConfig {
@@ -72,6 +72,9 @@ const SIGNUP_FIELDS: FieldConfig[] = [
 
 export default function SignupPage() {
 	const [, navigate] = useLocation();
+	const { showToast } = useToast();
+
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [form, setForm] = useState<Record<string, string>>({
 		preferred_username: "",
 		email: "",
@@ -91,31 +94,43 @@ export default function SignupPage() {
 
 	const isFormValid = Object.values(fieldValidity).every(Boolean);
 
-	const signupMutation = useMutation({
-		mutationFn: () =>
-			http
-				.post("/auth/signup", {
-					username: form.preferred_username,
-					email: form.email,
-					password: form.password,
-				})
-				.then((r) => r.data),
-		onSuccess: () => {
-			const params = new URLSearchParams();
-			params.set("email", form.email);
-			params.set("username", form.preferred_username);
-			navigate(`/confirm-signup?${params.toString()}`);
-		},
-	});
-
-	const getErrorMessage = (mutation: { error: unknown }) =>
-		(mutation.error as { message?: string })?.message ??
-		"Something went wrong. Please try again.";
-
-	const handleSignupSubmit = (e: React.FormEvent) => {
+	const handleSignupSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
-		if (!isFormValid) return;
-		signupMutation.mutate();
+
+		if (!isFormValid) {
+			return;
+		}
+
+		try {
+			setIsSubmitting(true);
+			await signUp({
+				username: form.email,
+				password: form.password,
+				options: {
+					userAttributes: {
+						preferred_username: form.preferred_username,
+					},
+				},
+			});
+			navigate(
+				`/confirm-signup?email=${form.email}&username=${form.preferred_username}`,
+			);
+		} catch (err) {
+			if (
+				err instanceof AuthError &&
+				err?.name === "UserLambdaValidationException"
+			) {
+				showToast(
+					"warning",
+					"Username is already taken, please select anything else.",
+				);
+			} else {
+				showToast("error", "Something went wrong, please try again later.");
+				console.error("Error signing up user: ", err);
+			}
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	const renderFields = (
@@ -159,26 +174,16 @@ export default function SignupPage() {
 						Start managing your home appliances today
 					</p>
 
-					{signupMutation.isError && (
-						<div className="mb-4 p-3 rounded-lg bg-error-bg border border-error text-error text-sm">
-							{getErrorMessage(signupMutation)}
-						</div>
-					)}
-
 					<form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
 						{renderFields(SIGNUP_FIELDS, (name, valid) =>
 							setFieldValidity((p) => ({ ...p, [name]: valid })),
 						)}
 						<Button
-							label={
-								signupMutation.isPending
-									? "Creating account…"
-									: "Create Account"
-							}
+							label={isSubmitting ? "Creating account…" : "Create Account"}
 							type="submit"
 							variant="primary"
 							fullWidth
-							disabled={!isFormValid || signupMutation.isPending}
+							disabled={!isFormValid || isSubmitting}
 						/>
 					</form>
 

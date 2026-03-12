@@ -1,10 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/button";
-import { http, uploadToS3 } from "@/hooks/useHttp";
-import { DocumentUpload, ProductUpload, UploadProgress } from "./components";
-import type { ProductEntry, UploadedFile, UploadResponse } from "./types";
+import { DocumentUpload, ProductUpload } from "./components";
+import useUpload from "./hooks/useUpload";
+import type { ProductEntry, UploadedFile } from "./types";
 
 export default function UploadPage() {
 	const [, navigate] = useLocation();
@@ -13,53 +12,48 @@ export default function UploadPage() {
 	const [products, setProducts] = useState<ProductEntry[]>([
 		{ id: "p0", name: "" },
 	]);
+	const [billNo, setBillNo] = useState("");
 
-	const [progress, setProgress] = useState<string | null>(null);
+	const {
+		mutation: { mutate: upload, isPending },
+		isAnalysisPending,
+	} = useUpload();
 
-	const mutation = useMutation({
-		mutationFn: async () => {
-			const res = await http
-				.post<UploadResponse>("/upload/presigned", {
-					files: files.map((f) => ({
-						name: f.file.name,
-						type: f.file.type,
-						size: f.file.size,
-					})),
-					products: products.map((p) => p.name).filter(Boolean),
-				})
-				.then((r) => r.data);
-
-			for (let i = 0; i < res.presignedUrls.length; i++) {
-				const { url, fileName } = res.presignedUrls[i];
-
-				setProgress(
-					`Uploading ${i + 1}/${res.presignedUrls.length}: ${fileName}`,
-				);
-
-				const entry = files.find((f) => f.file.name === fileName);
-				if (entry) await uploadToS3(url, entry.file);
-			}
-
-			setProgress(null);
-		},
-		onSuccess: () => navigate("/"),
-	});
+	const handleUpload = () => {
+		console.log(files, products, billNo);
+		upload({
+			files: files.map((f) => f.file),
+			products,
+			billNo,
+		});
+	};
 
 	const hasProductImage = products.some((p) => p.imageFile);
 
-	const canUpload = files.length > 0 && hasProductImage && !mutation.isPending;
+	const canUpload = files.length > 0 && hasProductImage && !!billNo;
 
 	return (
 		<div className="min-h-screen bg-bg-page">
 			<main className="max-w-7xl mx-auto px-4 py-12">
-				<UploadProgress
-					progress={progress}
-					error={(mutation.error as any)?.message}
-				/>
+				<div className="mb-10 max-w-md">
+					<label
+						htmlFor="billNo"
+						className="block text-sm font-bold text-text-heading mb-3"
+					>
+						Bill Number
+					</label>
+					<input
+						id="billNo"
+						type="text"
+						value={billNo}
+						onChange={(e) => setBillNo(e.target.value)}
+						placeholder="e.g. SCLEN646"
+						className="w-full rounded-2xl border border-border bg-bg-card px-5 py-3 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+					/>
+				</div>
 
 				<div className="flex flex-col lg:flex-row gap-10">
 					<DocumentUpload files={files} setFiles={setFiles} />
-
 					<ProductUpload products={products} setProducts={setProducts} />
 				</div>
 
@@ -71,12 +65,10 @@ export default function UploadPage() {
 					/>
 
 					<Button
-						label={
-							mutation.isPending ? "Uploading document…" : "Finalize & Extract"
-						}
+						label={isPending ? "Uploading document…" : "Finalize & Extract"}
 						variant="primary"
-						disabled={!canUpload}
-						onClick={() => mutation.mutate()}
+						disabled={!canUpload || isPending || isAnalysisPending}
+						onClick={handleUpload}
 					/>
 				</div>
 			</main>

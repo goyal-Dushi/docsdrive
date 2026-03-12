@@ -1,11 +1,13 @@
-export interface PresignedUrlItem {
-	url: string;
-	fileKey: string;
-	fileName: string;
+export interface UploadPromise {
+	kind: "file" | "product";
+	fileName?: string;
+	productName?: string;
+	uploadUrl: string;
+	key: string;
 }
 
 export interface UploadResponse {
-	presignedUrls: PresignedUrlItem[];
+	urls: UploadPromise[];
 }
 
 export interface UploadedFile {
