@@ -12,6 +12,8 @@ interface EditViewProps {
 	onSave: (data: BillDetail) => void;
 }
 
+// TODO : FIX PRODUCT DATA POINTS READS
+
 const EditView: React.FC<EditViewProps> = (props) => {
 	const { bill, onCancel, onSave } = props;
 
