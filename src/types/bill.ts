@@ -1,19 +1,24 @@
 export interface Product {
-	id: string;
-	image?: string;
-	name: string;
-	modelNumber: string;
-	serialNumber: string;
-	productName: string;
-	vendorName: string;
-	vendorAddress: string;
-	purchaseDate: string;
-	basePrice: string;
-	gst: string;
-	paymentMode: string;
-	warrantyStart: string;
-	warrantyEnd: string;
-	rawText: string;
+	id?: string;
+	purchaseDate?: string;
+	warrantyStart?: string;
+	lastUpdated?: string;
+	gstPercent?: number;
+	status?: string;
+	basePrice?: number;
+	groupName?: string;
+	purchaserName?: string;
+	modelNumber?: string;
+	vendorName?: string;
+	gstAmount?: number;
+	paymentMode?: string;
+	rawText?: string;
+	vendorContact?: string;
+	vendorAddress?: string;
+	warrantyEnd?: string | null;
+	serialNumber?: string | null;
+	productName?: string;
+	s3key?: string;
 }
 
 export interface BillDetail {
