@@ -1,10 +1,12 @@
 export { default as ChatIcon } from "./ChatSvg";
+export { default as EditIcon } from "./EditSvg";
 export { default as ExclamationIcon } from "./ErrorSvg";
 export { default as FileIcon } from "./FileSvg";
 export { default as HomeIcon } from "./HomeSvg";
 export { default as ImgIcon } from "./ImgIconSvg";
 export { default as NoFileIcon } from "./NoFileSvg";
 export { default as PlusIcon } from "./PlusSvg";
+export { default as ProductIcon } from "./ProductSvg";
 export { default as TrashIcon } from "./TrashBinSvg";
 export { default as UploadIcon } from "./UploadSvg";
 export { default as ViewIcon } from "./ViewSvg";
