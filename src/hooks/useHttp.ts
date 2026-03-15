@@ -76,14 +76,10 @@ authHttp.interceptors.response.use(
 	},
 );
 
-export const s3Http: XiorInstance = xior.create({
-	timeout: 60_000,
-});
-
 export const http = authHttp;
 
 export function useHttp() {
-	return { http, s3Http };
+	return http;
 }
 
 /**
