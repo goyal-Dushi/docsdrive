@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { ExclamationIcon } from "@/assets";
-import { http } from "@/hooks/useHttp";
+import http from "@/hooks/useHttp";
 import type { BillDetail } from "@/types/bill";
 import DetailsView from "./DetailsView";
 
@@ -13,7 +13,9 @@ export default function BillDetailsPage() {
 	const { data, isLoading, isError, error } = useQuery({
 		queryKey: ["bill", params.id],
 		queryFn: async () =>
-			await http.get<BillDetail>(`/bills/${params.id}`).then((r) => r.data),
+			await http
+				.get<BillDetail>(`/getBillData/${params.id}`)
+				.then((r) => r.data),
 	});
 
 	useEffect(() => {

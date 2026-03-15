@@ -1,6 +1,6 @@
 import { Button } from "@/components/button";
 import { getPendingBills } from "@/utils";
-import usePerformAiAnalysis from "../upload/hooks/usePerformAiAnalysis";
+import usePerformAiAnalysis from "../../upload/hooks/usePerformAiAnalysis";
 
 type PendingBillAnalysisBtnProps = {};
 

@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { ExclamationIcon, PlusIcon } from "@/assets";
-import type { Bill } from "@/components/billCard";
-import { BillCard, BillCardSkeleton } from "@/components/billCard";
 import { Button } from "@/components/button";
-import { http } from "@/hooks/useHttp";
-import PendingBillAnalysisBtn from "./PendingBillAnalysisBtn";
+import http from "@/hooks/useHttp";
+import {
+	type Bill,
+	BillCard,
+	BillCardSkeleton,
+	PendingBillAnalysisBtn,
+} from "./components";
 
 interface BillResponse {
 	data: Bill[];

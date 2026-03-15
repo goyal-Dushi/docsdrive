@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/button";
+import { encodeBillName } from "@/utils";
 import { DocumentUpload, ProductUpload } from "./components";
 import useUpload from "./hooks/useUpload";
 import type { ProductEntry, UploadedFile } from "./types";
@@ -20,11 +21,11 @@ export default function UploadPage() {
 	} = useUpload();
 
 	const handleUpload = () => {
-		console.log(files, products, billNo);
+		const modifiedBillName = encodeBillName(billNo);
 		upload({
 			files: files.map((f) => f.file),
 			products,
-			billNo,
+			billNo: modifiedBillName,
 		});
 	};
 

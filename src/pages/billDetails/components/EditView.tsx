@@ -15,7 +15,7 @@ interface EditViewProps {
 const EditView: React.FC<EditViewProps> = (props) => {
 	const { bill, onCancel, onSave } = props;
 
-	const { http } = useHttp();
+	const http = useHttp();
 	const [formData, setFormData] = useState<BillDetail>(bill);
 	const [fieldValidity, setFieldValidity] = useState<Record<string, boolean>>(
 		{},

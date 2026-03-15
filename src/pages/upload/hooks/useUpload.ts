@@ -12,7 +12,7 @@ interface UseUploadProps {
 }
 
 const useUpload = () => {
-	const { http } = useHttp();
+	const http = useHttp();
 	const { showToast } = useToast();
 	const { mutate: performAIanalysis, isPending: isAnalysisPending } =
 		usePerformAiAnalysis();
@@ -22,7 +22,7 @@ const useUpload = () => {
 		performAIanalysis({ billNo: [billNo] });
 	};
 
-	const handleSuccess = (_data: any, variables: UseUploadProps) => {
+	const handleSuccess = (_: unknown, variables: UseUploadProps) => {
 		showToast(
 			"success",
 			"Data added successfully to our server. Performing AI Analysis",
@@ -30,7 +30,7 @@ const useUpload = () => {
 		handlePerformAiAnalysis(variables);
 	};
 
-	const handleError = (err: any) => {
+	const handleError = (err: unknown) => {
 		console.error("Error while uploading to s3: ", err);
 		showToast("error", "Upload failed. Please try again later!");
 	};

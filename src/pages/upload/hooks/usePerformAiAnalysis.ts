@@ -2,22 +2,23 @@ import { useMutation } from "@tanstack/react-query";
 import { navigate } from "wouter/use-browser-location";
 import { useHttp } from "@/hooks/useHttp";
 import { useToast } from "@/hooks/useToast";
-import { deletePendingBills } from "@/utils";
+import { clearPendingBills, deletePendingBills } from "@/utils";
 
 interface UserPerformAiAnalysis {
 	billNo: string[];
 }
 
 const usePerformAiAnalysis = () => {
-	const { http } = useHttp();
+	const http = useHttp();
 	const { showToast } = useToast();
 
 	const handleSuccess = () => {
+		clearPendingBills();
 		showToast("success", "AI analysis of bills done successfully!");
 		navigate("/dashboard");
 	};
 
-	const handleError = (err: any) => {
+	const handleError = (err: unknown) => {
 		console.error("Error while performing AI analysis: ", err);
 		showToast("error", "Some error occurred when performing AI analysis.");
 	};
