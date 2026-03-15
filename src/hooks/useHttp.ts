@@ -82,16 +82,6 @@ export const s3Http: XiorInstance = xior.create({
 
 export const http = authHttp;
 
-/**
- * Custom hook providing access to the pre-configured HTTP client.
- *
- * Usage:
- *   const { http } = useHttp();
- *   useQuery({ queryKey: ['bills'], queryFn: () => http.get('/bills').then(r => r.data) })
- *
- * For S3 presigned URL uploads use `s3Http` imported directly, or the
- * `uploadToS3` helper below.
- */
 export function useHttp() {
 	return { http, s3Http };
 }
@@ -104,12 +94,13 @@ export async function uploadToS3(
 	presignedUrl: string,
 	file: File,
 ): Promise<void> {
-	await s3Http.request({
+	console.log(file, file instanceof File, file.size);
+	const res = await fetch(presignedUrl, {
 		method: "PUT",
-		url: presignedUrl,
-		data: file,
-		// headers: {
-		// 	"Content-Type": file.type,
-		// },
+		body: file,
 	});
+
+	if (!res.ok) {
+		throw new Error(`S3 upload failed: ${res.status}`);
+	}
 }
