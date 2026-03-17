@@ -16,9 +16,7 @@ const ProductsView: React.FC<ProductsViewProps> = (props) => {
 	return (
 		<div className="flex-1 flex flex-col gap-8">
 			<div className="flex items-center gap-3 py-2 border-b border-border">
-				<h2 className="text-xl font-bold text-text-heading">
-					Extracted Products
-				</h2>
+				<h2 className="text-xl font-bold text-text-heading">Products</h2>
 			</div>
 			<div className="flex flex-col gap-8">
 				{products.map((product) => (

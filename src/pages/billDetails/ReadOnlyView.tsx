@@ -19,14 +19,6 @@ const ReadOnlyView: React.FC<ReadOnlyViewProps> = (props) => {
 				<h1 className="text-3xl font-extrabold text-text-heading mb-2">
 					Bill Product Details
 				</h1>
-				<p className="text-base text-text-muted leading-relaxed">
-					Review and manage products extracted from{" "}
-					<span className="text-text-body font-semibold">
-						Bill #{data.billNumber}
-					</span>{" "}
-					for{" "}
-					<span className="text-text-body font-semibold">'{data.vendor}'</span>
-				</p>
 			</div>
 
 			<div className="flex flex-col lg:flex-row gap-10">

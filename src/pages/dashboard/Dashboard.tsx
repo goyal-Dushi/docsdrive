@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { ExclamationIcon, PlusIcon } from "@/assets";
 import { Button } from "@/components/button";
-import http from "@/hooks/useHttp";
+import { useHttp } from "@/hooks/useHttp";
 import {
 	type Bill,
 	BillCard,
@@ -16,6 +16,7 @@ interface BillResponse {
 
 export default function DashboardPage() {
 	const [, navigate] = useLocation();
+	const http = useHttp();
 
 	const { data, isLoading, isError, error } = useQuery({
 		queryKey: ["dashboard-data"],

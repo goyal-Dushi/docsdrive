@@ -1,10 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
-import { Button } from "@/components/button";
+import { useMemo, useState } from "react";
+import { EditIcon, FileIcon, PlusIcon, ProductIcon, TrashIcon } from "@/assets";
+import { Button, IconButton } from "@/components/button";
 import { DateInput, NumberInput, TextArea, TextInput } from "@/components/form";
 import { useHttp } from "@/hooks/useHttp";
 import type { ValidationRule } from "@/types";
 import type { BillDetail, Product } from "@/types/bill";
+import { getBillDate, getFileName, getTotalAmount, getVendor } from "../utils";
 
 interface EditViewProps {
 	bill: BillDetail;
@@ -22,6 +24,16 @@ const EditView: React.FC<EditViewProps> = (props) => {
 	const [fieldValidity, setFieldValidity] = useState<Record<string, boolean>>(
 		{},
 	);
+	const [deletedFile, setDeletedFile] = useState<string[]>([]);
+	const [filesAdded, setFilesAdded] = useState<File[]>([]);
+
+	const { totalAmount, billDate, vendor } = useMemo(() => {
+		const totalAmount = getTotalAmount(bill.products);
+		const billDate = getBillDate(bill.products);
+		const vendor = getVendor(bill.products);
+
+		return { totalAmount, billDate, vendor };
+	}, [bill.products]);
 
 	const isFormValid = Object.values(fieldValidity).every(Boolean);
 
@@ -35,40 +47,77 @@ const EditView: React.FC<EditViewProps> = (props) => {
 		setFieldValidity((prev) => ({ ...prev, [name]: valid }));
 	};
 
-	const updateProduct = (
-		productId: string,
-		field: keyof Product,
-		value: string,
-	) => {
-		setFormData((prev) => ({
-			...prev,
-			products: prev.products.map((p) =>
-				p.id === productId ? { ...p, [field]: value } : p,
-			),
-		}));
+	const updateProduct = (index: number, field: keyof Product, value: any) => {
+		setFormData((prev) => {
+			const newProducts = [...prev.products];
+			newProducts[index] = { ...newProducts[index], [field]: value };
+			return { ...prev, products: newProducts };
+		});
+	};
+
+	const handleSave = () => {
+		// Log the complete object being submitted
+		console.log("Submitting complete object:", formData);
+
+		// Calculate changed fields
+		const changedFields: any = {};
+
+		// Diff Bill level fields
+		(Object.keys(formData) as Array<keyof BillDetail>).forEach((key) => {
+			if (key !== "products" && key !== "files") {
+				if (formData[key] !== (bill as any)[key]) {
+					changedFields[key] = formData[key];
+				}
+			}
+		});
+
+		// Diff Products
+		const productChanges = formData.products
+			.map((p, idx) => {
+				const orig = bill.products[idx];
+				const changes: any = {};
+				(Object.keys(p) as Array<keyof Product>).forEach((k) => {
+					if (orig && p[k] !== (orig as any)[k]) {
+						changes[k] = p[k];
+					} else if (!orig) {
+						changes[k] = p[k];
+					}
+				});
+				return Object.keys(changes).length > 0
+					? { id: p.id, ...changes }
+					: null;
+			})
+			.filter(Boolean);
+
+		if (productChanges.length > 0) {
+			changedFields.products = productChanges;
+		}
+
+		// Include file changes in changedFields log
+		if (deletedFile.length > 0) {
+			changedFields.deletedFiles = deletedFile;
+		}
+		if (filesAdded.length > 0) {
+			changedFields.addedFiles = filesAdded.map((f) => f.name);
+		}
+
+		// Log only fields whose value is changed
+		console.log("Changed values only:", changedFields);
+
+		// mutation.mutate(formData);
 	};
 
 	const requiredText: ValidationRule[] = [
 		{ type: "required", message: "This field is required" },
 	];
 
+	const CLOUDFRONT_DOMAIN = import.meta.env.VITE_CLOUDFRONT_DOMAIN;
+
 	return (
 		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 			{/* Editing banner */}
-			<div className="mb-6 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] text-xs font-bold tracking-widest shadow-sm">
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2.5"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				>
-					<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-					<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-				</svg>
+			<div className="mb-6 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-primary-light text-primary text-xs font-bold tracking-widest shadow-sm">
+				<EditIcon />
 				EDITING MODE
 			</div>
 
@@ -76,111 +125,82 @@ const EditView: React.FC<EditViewProps> = (props) => {
 				Edit Bill Details
 			</h1>
 			<p className="text-base text-text-muted mb-10 leading-relaxed">
-				Modify extracted data from{" "}
+				Modify data from{" "}
 				<span className="text-text-body font-semibold">
-					Bill #{bill.billNumber}
+					Bill ({bill.products.length} Products)
 				</span>{" "}
-				for{" "}
-				<span className="text-text-body font-semibold">'{bill.vendor}'</span>
 			</p>
 
 			<div className="flex flex-col lg:flex-row gap-10">
-				{/* Left: Products */}
+				{/* Left Column: Bill & Products */}
 				<div className="flex-1 flex flex-col gap-8">
 					<div className="flex items-center gap-3 py-2 border-b border-border">
-						<svg
-							width="20"
-							height="20"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="var(--color-primary)"
-							strokeWidth="2.5"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-							<line x1="3" y1="9" x2="21" y2="9" />
-							<line x1="9" y1="21" x2="9" y2="9" />
-						</svg>
-						<h2 className="text-xl font-bold text-text-heading">
-							Extracted Products
-						</h2>
+						<h2 className="text-xl font-bold text-text-heading">Products</h2>
 					</div>
 
-					{formData.products.map((product) => (
+					{formData.products.map((product, idx) => (
 						<div
-							key={product.id}
+							key={product.id || idx}
 							className="bg-bg-card rounded-2xl border border-border p-8 shadow-sm"
 						>
 							<div className="flex items-center gap-4 mb-8 pb-6 border-b border-border">
 								<div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 border border-[var(--color-border)]">
-									{product.image ? (
+									{product.s3key ? (
 										<img
-											src={product.image}
-											alt={product.name}
+											src={`${CLOUDFRONT_DOMAIN}/${product.s3key}`}
+											alt={product.productName || "Product"}
 											className="w-12 h-12 rounded-xl object-cover"
 										/>
 									) : (
-										<svg
-											width="22"
-											height="22"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="text-muted"
-											strokeWidth="1.5"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-										>
-											<rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-											<line x1="8" y1="21" x2="16" y2="21" />
-											<line x1="12" y1="17" x2="12" y2="21" />
-										</svg>
+										<ProductIcon />
 									)}
 								</div>
-								<h3 className="text-lg font-bold text-text-heading opacity-90">
-									{product.name}
-								</h3>
+								<div className="flex flex-col">
+									<h3 className="text-lg font-bold text-text-heading opacity-90">
+										{product.productName || `Product ${idx + 1}`}
+									</h3>
+								</div>
 							</div>
 
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+								{/* Product Info */}
 								<div className="space-y-8">
 									<div>
 										<p className="text-xs font-bold text-primary uppercase tracking-widest mb-6 opacity-80">
-											Product Information
+											General Information
 										</p>
 										<div className="flex flex-col gap-6">
-											<TextInput
-												name={`${product.id}-modelNumber`}
-												label="Model Number"
-												value={product.modelNumber}
-												onChange={(v) =>
-													updateProduct(product.id, "modelNumber", v)
-												}
-												onValidationChange={handleValidationChange}
-												validations={requiredText}
-												required
-											/>
-											<TextInput
-												name={`${product.id}-serialNumber`}
-												label="Serial Number"
-												value={product.serialNumber}
-												onChange={(v) =>
-													updateProduct(product.id, "serialNumber", v)
-												}
-												onValidationChange={handleValidationChange}
-												validations={requiredText}
-											/>
 											<TextArea
-												name={`${product.id}-productName`}
+												name={`${idx}-productName`}
 												label="Product Name"
-												value={product.productName}
-												onChange={(v) =>
-													updateProduct(product.id, "productName", v)
-												}
+												value={product.productName || ""}
+												onChange={(v) => updateProduct(idx, "productName", v)}
 												onValidationChange={handleValidationChange}
-												rows={3}
+												rows={2}
 												validations={requiredText}
 												required
+											/>
+											<div className="grid grid-cols-2 gap-4">
+												<TextInput
+													name={`${idx}-modelNumber`}
+													label="Model Number"
+													value={product.modelNumber || ""}
+													onChange={(v) => updateProduct(idx, "modelNumber", v)}
+												/>
+												<TextInput
+													name={`${idx}-serialNumber`}
+													label="Serial Number"
+													value={product.serialNumber || ""}
+													onChange={(v) =>
+														updateProduct(idx, "serialNumber", v)
+													}
+												/>
+											</div>
+											<TextInput
+												name={`${idx}-purchaserName`}
+												label="Purchaser Name"
+												value={product.purchaserName || ""}
+												onChange={(v) => updateProduct(idx, "purchaserName", v)}
 											/>
 										</div>
 									</div>
@@ -191,111 +211,128 @@ const EditView: React.FC<EditViewProps> = (props) => {
 										</p>
 										<div className="flex flex-col gap-6">
 											<TextInput
-												name={`${product.id}-vendorName`}
+												name={`${idx}-vendorName`}
 												label="Vendor Name"
-												value={product.vendorName}
-												onChange={(v) =>
-													updateProduct(product.id, "vendorName", v)
-												}
-												onValidationChange={handleValidationChange}
-												validations={requiredText}
-												required
+												value={product.vendorName || ""}
+												onChange={(v) => updateProduct(idx, "vendorName", v)}
+											/>
+											<TextInput
+												name={`${idx}-vendorContact`}
+												label="Vendor Contact"
+												value={product.vendorContact || ""}
+												onChange={(v) => updateProduct(idx, "vendorContact", v)}
 											/>
 											<TextArea
-												name={`${product.id}-vendorAddress`}
+												name={`${idx}-vendorAddress`}
 												label="Vendor Address"
-												value={product.vendorAddress}
-												onChange={(v) =>
-													updateProduct(product.id, "vendorAddress", v)
-												}
-												onValidationChange={handleValidationChange}
+												value={product.vendorAddress || ""}
+												onChange={(v) => updateProduct(idx, "vendorAddress", v)}
 												rows={2}
-												validations={requiredText}
 											/>
 										</div>
 									</div>
 								</div>
 
+								{/* Dates & Financials */}
 								<div className="space-y-8">
 									<div>
 										<p className="text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-6 opacity-80">
-											Purchase Details
+											Dates
 										</p>
 										<div className="flex flex-col gap-6">
-											<DateInput
-												name={`${product.id}-purchaseDate`}
-												label="Purchase Date"
-												value={product.purchaseDate}
-												onChange={(v) =>
-													updateProduct(product.id, "purchaseDate", v)
-												}
-												onValidationChange={handleValidationChange}
-												validations={requiredText}
-												required
-											/>
+											<div className="grid grid-cols-2 gap-4">
+												<DateInput
+													name={`${idx}-purchaseDate`}
+													label="Purchase Date"
+													value={product.purchaseDate || ""}
+													onChange={(v) =>
+														updateProduct(idx, "purchaseDate", v)
+													}
+													onValidationChange={handleValidationChange}
+													validations={requiredText}
+													required
+												/>
+												<DateInput
+													name={`${idx}-lastUpdated`}
+													label="Last Updated"
+													value={product.lastUpdated || ""}
+													onChange={(v) => updateProduct(idx, "lastUpdated", v)}
+												/>
+											</div>
+											<div className="grid grid-cols-2 gap-4">
+												<DateInput
+													name={`${idx}-warrantyStart`}
+													label="Warranty Start"
+													value={product.warrantyStart || ""}
+													onChange={(v) =>
+														updateProduct(idx, "warrantyStart", v)
+													}
+												/>
+												<DateInput
+													name={`${idx}-warrantyEnd`}
+													label="Warranty End"
+													value={product.warrantyEnd || ""}
+													onChange={(v) => updateProduct(idx, "warrantyEnd", v)}
+												/>
+											</div>
+										</div>
+									</div>
+
+									<div>
+										<p className="text-xs font-bold text-secondary uppercase tracking-widest mb-6 opacity-80">
+											Financials & Registry
+										</p>
+										<div className="flex flex-col gap-6">
 											<NumberInput
-												name={`${product.id}-basePrice`}
+												name={`${idx}-basePrice`}
 												label="Base Price"
-												value={product.basePrice}
+												value={product.basePrice?.toString() || ""}
 												onChange={(v) =>
-													updateProduct(product.id, "basePrice", v)
+													updateProduct(
+														idx,
+														"basePrice",
+														v === "" ? undefined : Number(v),
+													)
 												}
-												onValidationChange={handleValidationChange}
 												validations={[
-													{ type: "required", message: "Price is required" },
 													{
 														type: "min",
 														value: 0,
 														message: "Price cannot be negative",
 													},
 												]}
-												required
 											/>
+											<div className="grid grid-cols-2 gap-4">
+												<NumberInput
+													name={`${idx}-gstPercent`}
+													label="GST %"
+													value={product.gstPercent?.toString() || ""}
+													onChange={(v) =>
+														updateProduct(
+															idx,
+															"gstPercent",
+															v === "" ? undefined : Number(v),
+														)
+													}
+												/>
+												<NumberInput
+													name={`${idx}-gstAmount`}
+													label="GST Amount"
+													value={product.gstAmount?.toString() || ""}
+													onChange={(v) =>
+														updateProduct(
+															idx,
+															"gstAmount",
+															v === "" ? undefined : Number(v),
+														)
+													}
+												/>
+											</div>
 											<TextInput
-												name={`${product.id}-gst`}
-												label="GST (6%)"
-												value={product.gst}
-												onChange={(v) => updateProduct(product.id, "gst", v)}
-												onValidationChange={handleValidationChange}
-											/>
-											<TextInput
-												name={`${product.id}-paymentMode`}
+												name={`${idx}-paymentMode`}
 												label="Payment Mode"
-												value={product.paymentMode}
-												onChange={(v) =>
-													updateProduct(product.id, "paymentMode", v)
-												}
-												onValidationChange={handleValidationChange}
-											/>
-										</div>
-									</div>
-
-									<div>
-										<p className="text-xs font-bold text-[var(--color-secondary)] uppercase tracking-widest mb-6 opacity-80">
-											Warranty Details
-										</p>
-										<div className="flex flex-col gap-6">
-											<DateInput
-												name={`${product.id}-warrantyStart`}
-												label="Start Date"
-												value={product.warrantyStart}
-												onChange={(v) =>
-													updateProduct(product.id, "warrantyStart", v)
-												}
-												onValidationChange={handleValidationChange}
-												validations={requiredText}
-												required
-											/>
-											<DateInput
-												name={`${product.id}-warrantyEnd`}
-												label="End Date"
-												value={product.warrantyEnd}
-												onChange={(v) =>
-													updateProduct(product.id, "warrantyEnd", v)
-												}
-												onValidationChange={handleValidationChange}
-												validations={requiredText}
-												required
+												value={product.paymentMode || ""}
+												onChange={(v) => updateProduct(idx, "paymentMode", v)}
 											/>
 										</div>
 									</div>
@@ -304,11 +341,10 @@ const EditView: React.FC<EditViewProps> = (props) => {
 
 							<div className="mt-10 pt-8 border-t border-[var(--color-border)]">
 								<TextArea
-									name={`${product.id}-rawText`}
+									name={`${idx}-rawText`}
 									label="Remaining Raw Text"
-									value={product.rawText}
-									onChange={(v) => updateProduct(product.id, "rawText", v)}
-									onValidationChange={handleValidationChange}
+									value={product.rawText || ""}
+									onChange={(v) => updateProduct(idx, "rawText", v)}
 									rows={4}
 								/>
 							</div>
@@ -320,19 +356,8 @@ const EditView: React.FC<EditViewProps> = (props) => {
 				<div className="lg:w-80 xl:w-96 shrink-0">
 					<div className="sticky top-24 bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border)] p-8 shadow-md">
 						<div className="flex items-center gap-3 mb-8 pb-4 border-b border-[var(--color-border)]">
-							<svg
-								width="20"
-								height="20"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="var(--color-primary)"
-								strokeWidth="2.5"
-							>
-								<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-							</svg>
 							<h3 className="text-xl font-bold text-[var(--color-text-heading)]">
-								Bill Summary
+								Documents Uploaded
 							</h3>
 						</div>
 						<div className="space-y-6">
@@ -341,7 +366,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 									Total Amount
 								</p>
 								<p className="text-2xl font-black text-[var(--color-text-heading)]">
-									{formData.totalAmount}
+									{totalAmount || "0.00"}
 								</p>
 							</div>
 							<div>
@@ -349,7 +374,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 									Bill Date
 								</p>
 								<p className="text-sm font-bold text-[var(--color-text-body)]">
-									{formData.billDate}
+									{billDate || "NA"}
 								</p>
 							</div>
 							<div>
@@ -357,38 +382,151 @@ const EditView: React.FC<EditViewProps> = (props) => {
 									Vendor
 								</p>
 								<p className="text-sm font-bold text-[var(--color-text-body)]">
-									{formData.vendor}
+									{vendor || "NA"}
 								</p>
 							</div>
 
-							<div className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--color-bg-page)] border border-[var(--color-border)] shadow-inner">
-								<div className="w-12 h-14 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 border border-amber-200">
-									<svg
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="#D97706"
-										strokeWidth="2.5"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-										<polyline points="14 2 14 8 20 8" />
-									</svg>
+							<div className="space-y-3">
+								<p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+									Attached Documents ({bill.files?.length || 0})
+								</p>
+								<div className="flex flex-col gap-2">
+									{bill.files?.map((file) => {
+										const fileName = getFileName(file);
+										const isDeleted = deletedFile.includes(file);
+										return (
+											<div
+												key={file}
+												className={`flex items-center gap-4 p-2 rounded-2xl border transition-all duration-200 ${
+													isDeleted
+														? "bg-red-50 border-red-200"
+														: "bg-bg-page border-border shadow-inner"
+												}`}
+											>
+												<div
+													className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border ${
+														isDeleted
+															? "bg-red-100 border-red-200"
+															: "bg-amber-100 border-amber-200"
+													}`}
+												>
+													<FileIcon />
+												</div>
+												<div className="min-w-0 flex-1">
+													<p
+														className={`text-sm font-bold truncate mb-0.5 ${
+															isDeleted ? "text-red-700" : "text-text-body"
+														}`}
+													>
+														{fileName}
+													</p>
+													<p
+														className={`text-[9px] font-bold uppercase tracking-widest ${
+															isDeleted ? "text-red-400" : "text-text-muted"
+														}`}
+													>
+														PDF DOCUMENT
+													</p>
+												</div>
+												{!isDeleted && (
+													<IconButton
+														icon={<TrashIcon className="text-red-500" />}
+														onClick={() =>
+															setDeletedFile((prev) => [...prev, file])
+														}
+														tooltip="Mark for deletion"
+													/>
+												)}
+												{isDeleted && (
+													<IconButton
+														icon={
+															<svg
+																width="16"
+																height="16"
+																viewBox="0 0 24 24"
+																fill="none"
+																stroke="currentColor"
+																strokeWidth="2.5"
+																strokeLinecap="round"
+																strokeLinejoin="round"
+															>
+																<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+															</svg>
+														}
+														onClick={() =>
+															setDeletedFile((prev) =>
+																prev.filter((f) => f !== file),
+															)
+														}
+														tooltip="Undo delete"
+														className="text-red-500"
+													/>
+												)}
+											</div>
+										);
+									})}
+
+									{/* Render newly added files */}
+									{filesAdded.map((file) => (
+										<div
+											key={`${file.name}-${file.lastModified}`}
+											className="flex items-center gap-4 p-2 rounded-2xl bg-green-50 border border-green-200 shadow-inner"
+										>
+											<div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 border border-green-200 text-green-600">
+												<FileIcon />
+											</div>
+											<div className="min-w-0 flex-1">
+												<p className="text-sm font-bold text-green-800 truncate mb-0.5">
+													{file.name}
+												</p>
+												<p className="text-[9px] font-bold text-green-600 uppercase tracking-widest">
+													NEW FILE
+												</p>
+											</div>
+											<IconButton
+												icon={<TrashIcon className="text-red-500" />}
+												onClick={() =>
+													setFilesAdded((prev) =>
+														prev.filter((f) => f !== file),
+													)
+												}
+												tooltip="Remove"
+											/>
+										</div>
+									))}
 								</div>
-								<div className="min-w-0">
-									<p className="text-xs font-bold text-[var(--color-text-body)] truncate">
-										{formData.pdfName}
-									</p>
-									<p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5">
-										{formData.pdfSize} • PDF DOCUMENT
-									</p>
+
+								<div className="mt-4">
+									<input
+										type="file"
+										multiple
+										id="add-file-input"
+										className="hidden"
+										onChange={(e) => {
+											const selectedFiles = e.target.files;
+											if (selectedFiles) {
+												setFilesAdded((prev) => [
+													...prev,
+													...Array.from(selectedFiles),
+												]);
+											}
+										}}
+									/>
+									<Button
+										label="Add File"
+										variant="secondary"
+										fullWidth
+										className="py-2 border-dashed border-2 hover:border-primary border-border"
+										icon={<PlusIcon />}
+										onClick={() =>
+											document.getElementById("add-file-input")?.click()
+										}
+									/>
 								</div>
 							</div>
 						</div>
 
-						<div className="mt-10 flex flex-col gap-3 pt-8 border-t border-[var(--color-border)]">
+						<div className="mt-10 flex flex-col gap-3 pt-8 border-t border-border">
 							<Button
 								label="Cancel"
 								variant="secondary"
@@ -401,7 +539,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 								variant="primary"
 								fullWidth
 								disabled={!isFormValid || mutation.isPending}
-								onClick={() => mutation.mutate(formData)}
+								onClick={handleSave}
 								icon={
 									<svg
 										width="16"
