@@ -4,9 +4,7 @@ export interface Product {
 	warrantyStart?: string;
 	lastUpdated?: string;
 	gstPercent?: number;
-	status?: string;
 	basePrice?: number;
-	groupName?: string;
 	purchaserName?: string;
 	modelNumber?: string;
 	vendorName?: string;
@@ -23,12 +21,7 @@ export interface Product {
 
 export interface BillDetail {
 	id: string;
-	billNumber: string;
-	vendor: string;
-	totalAmount: string;
 	billDate: string;
-	pdfUrl: string;
-	pdfName: string;
-	pdfSize: string;
 	products: Product[];
+	files: string[];
 }
