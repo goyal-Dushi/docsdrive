@@ -7,7 +7,7 @@ const FileSvg: React.FC<SVGProps<SVGSVGElement>> = () => {
 			height="20"
 			viewBox="0 0 24 24"
 			fill="none"
-			stroke="#2563EB"
+			stroke="currentColor"
 			strokeWidth="2.5"
 			strokeLinecap="round"
 			strokeLinejoin="round"

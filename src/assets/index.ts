@@ -1,4 +1,5 @@
 export { default as ChatIcon } from "./ChatSvg";
+export { default as DownloadIcon } from "./DownloadSvg";
 export { default as EditIcon } from "./EditSvg";
 export { default as ExclamationIcon } from "./ErrorSvg";
 export { default as FileIcon } from "./FileSvg";
