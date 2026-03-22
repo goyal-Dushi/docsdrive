@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { BillDetail } from "@/types/bill";
-import EditView from "./components/EditView";
+import EditView from "./EditView";
 import ReadOnlyView from "./ReadOnlyView";
 
 interface DetailsViewProps {
@@ -24,8 +24,7 @@ const DetailsView: React.FC<DetailsViewProps> = (props) => {
 			<EditView
 				bill={data}
 				onCancel={() => setIsEditing(false)}
-				onSave={(updated) => {
-					setBillData(updated);
+				onSave={() => {
 					handleEdit();
 				}}
 			/>

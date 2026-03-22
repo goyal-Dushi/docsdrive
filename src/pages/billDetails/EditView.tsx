@@ -1,31 +1,40 @@
-import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { EditIcon, FileIcon, PlusIcon, ProductIcon, TrashIcon } from "@/assets";
+import {
+	EditIcon,
+	FileIcon,
+	PlusIcon,
+	ProductIcon,
+	ResyncIcon,
+	TrashIcon,
+} from "@/assets";
 import { Button, IconButton } from "@/components/button";
 import { DateInput, NumberInput, TextArea, TextInput } from "@/components/form";
-import { useHttp } from "@/hooks/useHttp";
 import type { ValidationRule } from "@/types";
 import type { BillDetail, Product } from "@/types/bill";
-import { getBillDate, getFileName, getTotalAmount, getVendor } from "../utils";
+import useUpdateBill, { type UpdFileI } from "./hooks/useUpdateBill";
+import { getBillDate, getFileName, getTotalAmount, getVendor } from "./utils";
 
 interface EditViewProps {
 	bill: BillDetail;
 	onCancel: () => void;
-	onSave: (data: BillDetail) => void;
+	onSave: () => void;
 }
 
-// TODO : FIX PRODUCT DATA POINTS READS
+const requiredText: ValidationRule[] = [
+	{ type: "required", message: "This field is required" },
+];
+const CLOUDFRONT_DOMAIN = import.meta.env.VITE_CLOUDFRONT_DOMAIN;
 
 const EditView: React.FC<EditViewProps> = (props) => {
 	const { bill, onCancel, onSave } = props;
-
-	const http = useHttp();
+	console.log("bill : ", bill);
 	const [formData, setFormData] = useState<BillDetail>(bill);
 	const [fieldValidity, setFieldValidity] = useState<Record<string, boolean>>(
 		{},
 	);
 	const [deletedFile, setDeletedFile] = useState<string[]>([]);
-	const [filesAdded, setFilesAdded] = useState<File[]>([]);
+	const [filesAdded, setFilesAdded] = useState<UpdFileI[]>([]);
+	const { updateBill, isPending } = useUpdateBill();
 
 	const { totalAmount, billDate, vendor } = useMemo(() => {
 		const totalAmount = getTotalAmount(bill.products);
@@ -36,12 +45,6 @@ const EditView: React.FC<EditViewProps> = (props) => {
 	}, [bill.products]);
 
 	const isFormValid = Object.values(fieldValidity).every(Boolean);
-
-	const mutation = useMutation({
-		mutationFn: (data: BillDetail) =>
-			http.put(`/bills/${bill.id}`, data).then((r) => r.data as BillDetail),
-		onSuccess: (data) => onSave(data),
-	});
 
 	const handleValidationChange = (name: string, valid: boolean) => {
 		setFieldValidity((prev) => ({ ...prev, [name]: valid }));
@@ -55,7 +58,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 		});
 	};
 
-	const handleSave = () => {
+	const handleSave = async () => {
 		// Log the complete object being submitted
 		console.log("Submitting complete object:", formData);
 
@@ -84,7 +87,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 					}
 				});
 				return Object.keys(changes).length > 0
-					? { id: p.id, ...changes }
+					? { id: p.id, SK: p.SK, ...changes }
 					: null;
 			})
 			.filter(Boolean);
@@ -98,20 +101,22 @@ const EditView: React.FC<EditViewProps> = (props) => {
 			changedFields.deletedFiles = deletedFile;
 		}
 		if (filesAdded.length > 0) {
-			changedFields.addedFiles = filesAdded.map((f) => f.name);
+			console.log("file added: ", filesAdded);
+			// Iterate over filesAdded to only add details (File objects)
+			changedFields.addedFiles = filesAdded.map((f) => {
+				return {
+					details: f.details,
+					products: f.products,
+				};
+			});
 		}
 
 		// Log only fields whose value is changed
 		console.log("Changed values only:", changedFields);
-
-		// mutation.mutate(formData);
+		await updateBill({ billNo: bill.billNo, ...changedFields }).then(() => {
+			onSave();
+		});
 	};
-
-	const requiredText: ValidationRule[] = [
-		{ type: "required", message: "This field is required" },
-	];
-
-	const CLOUDFRONT_DOMAIN = import.meta.env.VITE_CLOUDFRONT_DOMAIN;
 
 	return (
 		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -439,20 +444,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 												)}
 												{isDeleted && (
 													<IconButton
-														icon={
-															<svg
-																width="16"
-																height="16"
-																viewBox="0 0 24 24"
-																fill="none"
-																stroke="currentColor"
-																strokeWidth="2.5"
-																strokeLinecap="round"
-																strokeLinejoin="round"
-															>
-																<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-															</svg>
-														}
+														icon={<ResyncIcon />}
 														onClick={() =>
 															setDeletedFile((prev) =>
 																prev.filter((f) => f !== file),
@@ -467,31 +459,93 @@ const EditView: React.FC<EditViewProps> = (props) => {
 									})}
 
 									{/* Render newly added files */}
-									{filesAdded.map((file) => (
+									{filesAdded.map((file, additionIdx) => (
 										<div
-											key={`${file.name}-${file.lastModified}`}
-											className="flex items-center gap-4 p-2 rounded-2xl bg-green-50 border border-green-200 shadow-inner"
+											key={`${file.details.name}-${file.details.size}-${file.details.lastModified}`}
+											className="flex flex-col gap-4 p-4 rounded-2xl bg-green-50 border border-green-200 shadow-inner"
 										>
-											<div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 border border-green-200 text-green-600">
-												<FileIcon />
+											<div className="flex items-center gap-4">
+												<div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 border border-green-200 text-green-600">
+													<FileIcon />
+												</div>
+												<div className="min-w-0 flex-1">
+													<p className="text-sm font-bold text-green-800 truncate mb-0.5">
+														{file.details.name}
+													</p>
+													<p className="text-[9px] font-bold text-green-600 uppercase tracking-widest">
+														NEW FILE
+													</p>
+												</div>
+												<IconButton
+													icon={<TrashIcon className="text-red-500" />}
+													onClick={() =>
+														setFilesAdded((prev) =>
+															prev.filter((_, i) => i !== additionIdx),
+														)
+													}
+													tooltip="Remove"
+												/>
 											</div>
-											<div className="min-w-0 flex-1">
-												<p className="text-sm font-bold text-green-800 truncate mb-0.5">
-													{file.name}
-												</p>
-												<p className="text-[9px] font-bold text-green-600 uppercase tracking-widest">
-													NEW FILE
-												</p>
+
+											{/* Product Selection for new file */}
+											<div className="flex flex-col gap-1.5 ml-14">
+												<label
+													htmlFor={`product-select-${additionIdx}`}
+													className="text-[10px] font-black uppercase tracking-widest text-green-600"
+												>
+													Link to Product <span className="text-error">*</span>
+												</label>
+												<select
+													id={`product-select-${additionIdx}`}
+													className="w-full bg-white border border-green-200 rounded-lg px-3 py-2 text-sm font-medium text-text-body focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all"
+													value={file.products[0]?.SK || ""}
+													onChange={(e) => {
+														const selectedSK = e.target.value;
+														const product = formData.products.find(
+															(p: Product & { SK?: string }) =>
+																p.SK === selectedSK,
+														) as (Product & { SK: string }) | undefined;
+														if (product) {
+															setFilesAdded((prev) => {
+																const next = [...prev];
+																next[additionIdx] = {
+																	...next[additionIdx],
+																	products: [
+																		{
+																			name: product.productName || "Unknown",
+																			SK: selectedSK,
+																		},
+																	],
+																};
+																return next;
+															});
+														} else {
+															// Reset if needed
+															setFilesAdded((prev) => {
+																const next = [...prev];
+																next[additionIdx] = {
+																	...next[additionIdx],
+																	products: [],
+																};
+																return next;
+															});
+														}
+													}}
+													required
+												>
+													<option value="">Select a product...</option>
+													{formData.products.map(
+														(p: Product & { SK?: string }) => (
+															<option
+																key={p.SK || p.id || p.productName}
+																value={p.SK}
+															>
+																{p.productName || "Unnamed Product"}
+															</option>
+														),
+													)}
+												</select>
 											</div>
-											<IconButton
-												icon={<TrashIcon className="text-red-500" />}
-												onClick={() =>
-													setFilesAdded((prev) =>
-														prev.filter((f) => f !== file),
-													)
-												}
-												tooltip="Remove"
-											/>
 										</div>
 									))}
 								</div>
@@ -500,6 +554,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 									<input
 										type="file"
 										multiple
+										disabled={isPending}
 										id="add-file-input"
 										className="hidden"
 										onChange={(e) => {
@@ -507,7 +562,10 @@ const EditView: React.FC<EditViewProps> = (props) => {
 											if (selectedFiles) {
 												setFilesAdded((prev) => [
 													...prev,
-													...Array.from(selectedFiles),
+													...Array.from(selectedFiles).map((f) => ({
+														details: f,
+														products: [],
+													})),
 												]);
 											}
 										}}
@@ -516,6 +574,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 										label="Add File"
 										variant="secondary"
 										fullWidth
+										disabled={isPending}
 										className="py-2 border-dashed border-2 hover:border-primary border-border"
 										icon={<PlusIcon />}
 										onClick={() =>
@@ -530,15 +589,20 @@ const EditView: React.FC<EditViewProps> = (props) => {
 							<Button
 								label="Cancel"
 								variant="secondary"
+								disabled={isPending}
 								fullWidth
 								onClick={onCancel}
 								className="py-3"
 							/>
 							<Button
-								label={mutation.isPending ? "Saving…" : "Save Changes"}
+								label="Save Changes"
 								variant="primary"
 								fullWidth
-								disabled={!isFormValid || mutation.isPending}
+								disabled={
+									!isFormValid ||
+									filesAdded.some((f) => f.products.length === 0) ||
+									isPending
+								}
 								onClick={handleSave}
 								icon={
 									<svg
