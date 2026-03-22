@@ -1,5 +1,6 @@
 export interface Product {
 	id?: string;
+	SK: string;
 	purchaseDate?: string;
 	warrantyStart?: string;
 	lastUpdated?: string;
@@ -22,6 +23,7 @@ export interface Product {
 export interface BillDetail {
 	id: string;
 	billDate: string;
+	billNo: string;
 	products: Product[];
 	files: string[];
 }

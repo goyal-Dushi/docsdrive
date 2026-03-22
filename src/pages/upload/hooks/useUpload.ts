@@ -7,8 +7,9 @@ import usePerformAiAnalysis from "./usePerformAiAnalysis";
 
 interface UseUploadProps {
 	files: File[];
-	products: ProductEntry[];
+	products?: ProductEntry[];
 	billNo: string;
+	isEdit?: boolean;
 }
 
 const useUpload = () => {
@@ -23,11 +24,14 @@ const useUpload = () => {
 	};
 
 	const handleSuccess = (_: unknown, variables: UseUploadProps) => {
+		const { isEdit } = variables;
 		showToast(
 			"success",
 			"Data added successfully to our server. Performing AI Analysis",
 		);
-		handlePerformAiAnalysis(variables);
+		if (!isEdit) {
+			handlePerformAiAnalysis(variables);
+		}
 	};
 
 	const handleError = (err: unknown) => {
@@ -49,7 +53,7 @@ const useUpload = () => {
 						type: f.type,
 					})),
 					products: products
-						.filter((p) => p.name && p.imageFile)
+						?.filter((p) => p.name && p.imageFile)
 						.map((p) => ({
 							name: p.name,
 							type: p.imageFile?.type || "image/webp",
@@ -68,7 +72,7 @@ const useUpload = () => {
 					}
 
 					if (kind === "product") {
-						const entry = products.find(
+						const entry = products?.find(
 							(p) => p.name === uploadPromise.productName,
 						);
 						if (entry?.imageFile) await uploadToS3(uploadUrl, entry.imageFile);
