@@ -23,7 +23,6 @@ export default function DashboardPage() {
 		queryFn: async () => {
 			const response =
 				await http.get<BillResponse["data"]>("/getDashboardData");
-			console.log("dashboard response", response.data);
 			return response.data;
 		},
 		retry: 2,

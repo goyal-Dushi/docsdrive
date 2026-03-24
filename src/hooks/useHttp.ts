@@ -1,5 +1,5 @@
-import { fetchAuthSession } from "aws-amplify/auth";
 import xior, { type XiorError, type XiorInstance } from "xior";
+import { getIdToken } from "@/utils";
 
 export interface HttpError {
 	message: string;
@@ -48,7 +48,7 @@ const authHttp: XiorInstance = xior.create({
 
 authHttp.interceptors.request.use(async (config) => {
 	try {
-		const idToken = (await fetchAuthSession()).tokens?.idToken?.toString();
+		const idToken = await getIdToken();
 		const method = config.method?.toUpperCase() || "GET";
 		if (method !== "GET") {
 			config.headers = config.headers ?? {};

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/button";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -14,28 +14,26 @@ interface BillReference {
 	uname: string;
 }
 
-const DUMMY_REF: BillReference = {
-	billNo: "1",
-	invoice: "Invoice #01/15/2023",
-	products: "Samsung Front Load Washer, Samsung Heat Pump Dryer",
-	uname: "user",
-};
+type ChatPageProps = {};
 
-export default function ChatPage() {
-	const params = useParams<{ billNo: string }>();
+const ChatPage: React.FC<ChatPageProps> = () => {
 	const [, navigate] = useLocation();
-	const billNo = params.billNo ?? "unknown";
-	const ref = DUMMY_REF;
-	const storageKey = `chat_${billNo}_${ref.uname}`;
+	const { billNo } = useParams<{ billNo: string }>();
+	const storageKey = `chat_${billNo}`;
 
-	const wsUrl = `${WS_BASE_URL}?billNo=${billNo}`;
 	const { messages, status, sendMessage, disconnect } = useWebSocket({
-		url: wsUrl,
+		billNo,
+		url: WS_BASE_URL,
 		storageKey,
 	});
 
 	const [input, setInput] = useState("");
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+
+	const handleBeforeUnload = useCallback(() => {
+		console.log("disconnecting");
+		disconnect();
+	}, [disconnect]);
 
 	// Auto-scroll to latest message
 	useEffect(() => {
@@ -44,16 +42,16 @@ export default function ChatPage() {
 
 	// Disconnect on window close / tab close
 	useEffect(() => {
-		const handleBeforeUnload = () => disconnect();
 		window.addEventListener("beforeunload", handleBeforeUnload);
 		return () => {
 			window.removeEventListener("beforeunload", handleBeforeUnload);
 		};
-	}, [disconnect]);
+	}, [handleBeforeUnload]);
 
 	const handleSend = () => {
 		const trimmed = input.trim();
 		if (!trimmed || status !== "connected") return;
+
 		sendMessage(trimmed);
 		setInput("");
 	};
@@ -92,7 +90,7 @@ export default function ChatPage() {
 					style={{ minHeight: "65vh" }}
 				>
 					{/* Bill Reference Bar */}
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-8 py-6 border-b border-[var(--color-border)] bg-[var(--color-primary-light)]/30 backdrop-blur-sm">
+					{/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-8 py-6 border-b border-[var(--color-border)] bg-[var(--color-primary-light)]/30 backdrop-blur-sm">
 						<div>
 							<p className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest mb-1 opacity-80">
 								Current Reference
@@ -109,7 +107,7 @@ export default function ChatPage() {
 								{ref.products}
 							</p>
 						</div>
-					</div>
+					</div> */}
 
 					{/* Messages */}
 					<div className="flex-1 overflow-y-auto px-6 sm:px-8 py-8 flex flex-col gap-6 scrollbar-thin scrollbar-thumb-gray-200">
@@ -263,4 +261,6 @@ export default function ChatPage() {
 			</main>
 		</div>
 	);
-}
+};
+
+export default ChatPage;
