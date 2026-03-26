@@ -17,7 +17,8 @@
 				"noSvgWithoutTitle": "off"
 			},
 			"suspicious": {
-				"noAssignInExpressions": "off"
+				"noAssignInExpressions": "off",
+				"noEmptyInterface": "off"
 			}
 		}
 	},
