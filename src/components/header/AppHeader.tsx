@@ -9,7 +9,9 @@ export function AppHeader() {
 
 	const handleLogout = async () => {
 		try {
-			await signOut();
+			await signOut({
+				global: true,
+			});
 			navigate("/login");
 		} catch (err) {
 			console.error("Error logging out: ", err);
