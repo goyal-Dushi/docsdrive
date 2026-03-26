@@ -8,6 +8,8 @@ export interface Product {
 	basePrice?: number;
 	purchaserName?: string;
 	modelNumber?: string;
+	category: string;
+	brand: string;
 	vendorName?: string;
 	gstAmount?: number;
 	paymentMode?: string;
