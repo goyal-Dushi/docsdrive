@@ -1,15 +1,16 @@
 import { useRef } from "react";
-import { PlusIcon, TrashIcon } from "@/assets";
+import { ImgIcon, PlusIcon, TrashIcon } from "@/assets";
 import { Button, IconButton } from "@/components/button";
 import type { ProductEntry } from "../types";
 
 interface Props {
 	products: ProductEntry[];
+	isDisabled: boolean;
 	setProducts: (p: ProductEntry[]) => void;
 }
 
 const ProductUpload: React.FC<Props> = (props) => {
-	const { products, setProducts } = props;
+	const { products, isDisabled, setProducts } = props;
 	const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
 	const addProduct = () => {
@@ -36,8 +37,15 @@ const ProductUpload: React.FC<Props> = (props) => {
 
 	return (
 		<div className="flex-1 bg-bg-card rounded-3xl border border-border p-8 shadow-md">
-			<div className="flex justify-between mb-10 pb-6 border-b border-border">
-				<h2 className="text-xl font-bold text-text-heading">Product Labels</h2>
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-border">
+				<div className="flex flex-col gap-1">
+					<h2 className="text-xl font-bold text-text-heading">
+						Product Labels
+					</h2>
+					<p className="text-sm text-text-muted opacity-60">
+						Products that above bill/documents cover
+					</p>
+				</div>
 
 				<Button
 					label="Add Entry"
@@ -45,17 +53,25 @@ const ProductUpload: React.FC<Props> = (props) => {
 					icon={<PlusIcon />}
 					iconPosition="start"
 					onClick={addProduct}
+					disabled={isDisabled}
+					className="w-full md:w-auto"
 				/>
 			</div>
 
 			<div className="flex flex-col gap-6">
 				{products.map((product) => (
 					<div key={product.id} className="flex items-center gap-6">
-						{/* IMAGE BUTTON */}
 						<button
 							type="button"
-							onClick={() => fileRefs.current[product.id]?.click()}
-							className="w-14 h-14 rounded-2xl border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg-page)] flex items-center justify-center shrink-0 cursor-pointer overflow-hidden"
+							onClick={() =>
+								!isDisabled && fileRefs.current[product.id]?.click()
+							}
+							disabled={isDisabled}
+							className={`w-14 h-14 rounded-2xl border-2 border-dashed border-border bg-bg-page flex items-center justify-center shrink-0 transition-all ${
+								isDisabled
+									? "opacity-50 cursor-not-allowed bg-gray-100"
+									: "hover:border-primary hover:bg-primary/5 cursor-pointer overflow-hidden"
+							}`}
 						>
 							{product.image ? (
 								<img
@@ -64,22 +80,10 @@ const ProductUpload: React.FC<Props> = (props) => {
 									className="w-full h-full object-cover"
 								/>
 							) : (
-								<svg
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									stroke="var(--color-text-muted)"
-									strokeWidth="1.5"
-									fill="none"
-								>
-									<rect x="3" y="3" width="18" height="18" rx="2" />
-									<circle cx="8.5" cy="8.5" r="1.5" />
-									<polyline points="21 15 16 10 5 21" />
-								</svg>
+								<ImgIcon />
 							)}
 						</button>
 
-						{/* Hidden file input */}
 						<input
 							type="file"
 							accept="image/*"
@@ -87,6 +91,7 @@ const ProductUpload: React.FC<Props> = (props) => {
 								fileRefs.current[product.id] = el;
 							}}
 							className="hidden"
+							disabled={isDisabled}
 							onChange={(e) => {
 								const file = e.target.files?.[0];
 								if (file) updateImage(product.id, file);
@@ -98,16 +103,24 @@ const ProductUpload: React.FC<Props> = (props) => {
 							<input
 								value={product.name}
 								onChange={(e) => updateProductName(product.id, e.target.value)}
+								disabled={isDisabled}
 								placeholder="Enter product name"
-								className="w-full rounded-2xl border border-border bg-bg-page px-5 py-3 text-sm font-bold"
+								className={`w-full rounded-2xl border border-border bg-bg-page px-5 py-3 text-sm font-bold placeholder:italic placeholder:font-normal placeholder:opacity-50 ${
+									isDisabled
+										? "opacity-50 cursor-not-allowed bg-gray-100"
+										: "focus:outline-none focus:ring-2 focus:ring-primary/20"
+								}`}
 							/>
 						</div>
 
 						<IconButton
 							icon={<TrashIcon />}
 							tooltip="Remove product"
+							disabled={isDisabled}
 							onClick={() => removeProduct(product.id)}
-							className="text-error!"
+							className={`text-error! transition-all ${
+								isDisabled ? "opacity-30 cursor-not-allowed" : ""
+							}`}
 						/>
 					</div>
 				))}

@@ -3,12 +3,7 @@ import { useLocation } from "wouter";
 import { ExclamationIcon, PlusIcon } from "@/assets";
 import { Button } from "@/components/button";
 import { useHttp } from "@/hooks/useHttp";
-import {
-	type Bill,
-	BillCard,
-	BillCardSkeleton,
-	PendingBillAnalysisBtn,
-} from "./components";
+import { type Bill, BillCard, BillCardSkeleton } from "./components";
 
 interface BillResponse {
 	data: Bill[];
@@ -52,40 +47,37 @@ export default function DashboardPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-bg-page">
-			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-				<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-12">
-					<div>
-						<h1 className="text-3xl sm:text-4xl font-black text-text-heading tracking-tight">
-							Analyzed Bills Gallery
-						</h1>
-						<p className="text-base sm:text-lg text-text-muted mt-2 font-medium max-w-2xl">
-							Review your extracted appliance data, manuals, and active
-							warranties in one place.
-						</p>
-					</div>
-					<Button
-						label="Upload New Bill"
-						variant="primary"
-						icon={<PlusIcon className="w-4 h-4" />}
-						iconPosition="start"
-						onClick={() => navigate("/upload")}
-						className="py-4 px-6 text-blue-500 shadow-xl shadow-blue-500/20"
-					/>
+		<>
+			<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-12">
+				<div>
+					<h1 className="text-3xl sm:text-4xl font-black text-text-heading tracking-tight">
+						Analyzed Bills Gallery
+					</h1>
+					<p className="text-base sm:text-lg text-text-muted mt-2 font-medium max-w-2xl">
+						Review your extracted appliance data, manuals, and active warranties
+						in one place.
+					</p>
 				</div>
-				<PendingBillAnalysisBtn />
+				<Button
+					label="Upload New Bill"
+					variant="primary"
+					icon={<PlusIcon className="w-4 h-4" />}
+					iconPosition="start"
+					onClick={() => navigate("/upload")}
+					className="py-4 px-6 text-blue-500 shadow-xl shadow-blue-500/20"
+				/>
+			</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-					{bills.map((bill) => (
-						<BillCard
-							key={bill.billNo}
-							bill={bill}
-							onChat={() => navigate(`/chat/${bill.billNo}`)}
-							onView={() => navigate(`/bills/${bill.billNo}`)}
-						/>
-					))}
-				</div>
-			</main>
-		</div>
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				{bills.map((bill) => (
+					<BillCard
+						key={bill.billNo}
+						bill={bill}
+						onChat={() => navigate(`/chat/${bill.billNo}`)}
+						onView={() => navigate(`/bills/${bill.billNo}`)}
+					/>
+				))}
+			</div>
+		</>
 	);
 }

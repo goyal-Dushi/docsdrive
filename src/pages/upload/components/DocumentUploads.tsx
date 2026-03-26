@@ -7,11 +7,12 @@ import type { UploadedFile } from "../types";
 
 interface DocumentUploadProps {
 	files: UploadedFile[];
+	isDisabled: boolean;
 	setFiles: (files: UploadedFile[]) => void;
 }
 
 const DocumentUploadCard: React.FC<DocumentUploadProps> = (props) => {
-	const { files, setFiles } = props;
+	const { files, isDisabled, setFiles } = props;
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,7 +35,7 @@ const DocumentUploadCard: React.FC<DocumentUploadProps> = (props) => {
 		<div className="flex-1 bg-bg-card rounded-3xl border border-border p-8 shadow-md">
 			<div className="flex justify-between mb-10 pb-6 border-b border-border">
 				<h2 className="text-xl font-bold text-text-heading">
-					Document Uploads
+					Upload Documents
 				</h2>
 
 				<Button
@@ -43,6 +44,7 @@ const DocumentUploadCard: React.FC<DocumentUploadProps> = (props) => {
 					icon={<UploadIcon />}
 					iconPosition="start"
 					onClick={() => inputRef.current?.click()}
+					disabled={isDisabled}
 				/>
 			</div>
 
@@ -53,15 +55,24 @@ const DocumentUploadCard: React.FC<DocumentUploadProps> = (props) => {
 				accept=".pdf,.jpg,.jpeg,.png,.docx,.doc"
 				onChange={handleFileInput}
 				className="hidden"
+				disabled={isDisabled}
 			/>
 
 			{files.length === 0 ? (
-				<div className="flex flex-col items-center gap-4 py-20 text-center border-2 border-dashed rounded-2xl">
+				<button
+					type="button"
+					onClick={() => !isDisabled && inputRef.current?.click()}
+					className={`w-full flex flex-col items-center gap-4 py-10 text-center border-2 border-dashed rounded-2xl transition-all ${
+						isDisabled
+							? "opacity-50 cursor-not-allowed bg-bg-page/50"
+							: "border-border hover:border-primary hover:bg-primary/5 cursor-pointer"
+					}`}
+				>
 					<NoFileIcon />
 					<p className="text-sm text-text-muted">
 						Upload PDFs, images, or Word documents
 					</p>
-				</div>
+				</button>
 			) : (
 				<div className="flex flex-col gap-4">
 					{files.map(({ id, file }) => (

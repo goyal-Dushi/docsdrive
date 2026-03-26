@@ -5,11 +5,11 @@ import ReadOnlyView from "./ReadOnlyView";
 
 interface DetailsViewProps {
 	data: BillDetail;
-	setBillData: React.Dispatch<React.SetStateAction<BillDetail | null>>;
+	onEditDone: () => void;
 }
 
 const DetailsView: React.FC<DetailsViewProps> = (props) => {
-	const { data, setBillData } = props;
+	const { data, onEditDone } = props;
 
 	const [isEditing, setIsEditing] = useState(false);
 
@@ -17,6 +17,7 @@ const DetailsView: React.FC<DetailsViewProps> = (props) => {
 		setIsEditing((prev) => {
 			return !prev;
 		});
+		onEditDone();
 	};
 
 	if (isEditing) {
@@ -24,9 +25,7 @@ const DetailsView: React.FC<DetailsViewProps> = (props) => {
 			<EditView
 				bill={data}
 				onCancel={() => setIsEditing(false)}
-				onSave={() => {
-					handleEdit();
-				}}
+				onSave={handleEdit}
 			/>
 		);
 	}

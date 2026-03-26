@@ -119,9 +119,9 @@ const EditView: React.FC<EditViewProps> = (props) => {
 	};
 
 	return (
-		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+		<>
 			{/* Editing banner */}
-			<div className="mb-6 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-primary-light text-primary text-xs font-bold tracking-widest shadow-sm">
+			<div className="mb-4 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-primary-light text-primary text-xs font-bold tracking-widest shadow-sm">
 				<EditIcon />
 				EDITING MODE
 			</div>
@@ -129,7 +129,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 			<h1 className="text-3xl font-extrabold text-text-heading mb-2">
 				Edit Bill Details
 			</h1>
-			<p className="text-base text-text-muted mb-10 leading-relaxed">
+			<p className="text-base text-text-muted mb-2 leading-relaxed">
 				Modify data from{" "}
 				<span className="text-text-body font-semibold">
 					Bill ({bill.products.length} Products)
@@ -207,6 +207,20 @@ const EditView: React.FC<EditViewProps> = (props) => {
 												value={product.purchaserName || ""}
 												onChange={(v) => updateProduct(idx, "purchaserName", v)}
 											/>
+											<div className="grid grid-cols-2 gap-4">
+												<TextInput
+													name={`${idx}-brand`}
+													label="Brand"
+													value={product.brand || ""}
+													onChange={(v) => updateProduct(idx, "brand", v)}
+												/>
+												<TextInput
+													name={`${idx}-category`}
+													label="Category"
+													value={product.category || ""}
+													onChange={(v) => updateProduct(idx, "category", v)}
+												/>
+											</div>
 										</div>
 									</div>
 
@@ -627,7 +641,7 @@ const EditView: React.FC<EditViewProps> = (props) => {
 					</div>
 				</div>
 			</div>
-		</main>
+		</>
 	);
 };
 

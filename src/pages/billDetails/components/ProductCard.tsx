@@ -51,6 +51,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit }) => {
 								{ label: "Product Name", value: product.productName },
 								{ label: "Model Number", value: product.modelNumber },
 								{ label: "Serial Number", value: product.serialNumber },
+								{ label: "Brand", value: product.brand },
+								{ label: "Category", value: product.category },
 								{
 									label: "Last Updated",
 									value: product.lastUpdated

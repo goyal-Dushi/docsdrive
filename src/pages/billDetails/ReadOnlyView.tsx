@@ -14,9 +14,9 @@ const ReadOnlyView: React.FC<ReadOnlyViewProps> = (props) => {
 	};
 
 	return (
-		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-			<div className="mb-10">
-				<h1 className="text-3xl font-extrabold text-text-heading mb-2">
+		<>
+			<div className="mb-2">
+				<h1 className="text-3xl font-extrabold text-text-heading">
 					Bill Product Details
 				</h1>
 			</div>
@@ -28,7 +28,7 @@ const ReadOnlyView: React.FC<ReadOnlyViewProps> = (props) => {
 				{/* Right: Bill Summary */}
 				<BillSummaryView bill={data} onEdit={handleOnEdit} />
 			</div>
-		</main>
+		</>
 	);
 };
 
