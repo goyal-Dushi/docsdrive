@@ -1,5 +1,6 @@
 import { signOut } from "aws-amplify/auth";
 import { useLocation } from "wouter";
+import { HomeIcon } from "@/assets";
 import { Button } from "@/components/button";
 import { useHeaderConfig } from "@/context/HeaderContext";
 
@@ -27,53 +28,36 @@ export function AppHeader() {
 					onClick={() => navigate("/")}
 					className="flex items-center gap-2.5 cursor-pointer"
 				>
-					<div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="white"
-							strokeWidth="2.5"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-							<polyline points="9 22 9 12 15 12 15 22" />
-						</svg>
-					</div>
+					<HomeIcon />
 					<span className="font-bold text-text-heading hidden sm:block">
-						{config.title ?? "Digital Home Binder"}
+						{config.title ?? "DocsDrive"}
 					</span>
 				</button>
 
 				{/* Right slot + logout */}
 				<div className="flex items-center gap-2">
-					{config.rightSlot}
-					{(config.showLogout ?? true) && (
-						<Button
-							label="Log Out"
-							variant="secondary"
-							icon={
-								<svg
-									width="15"
-									height="15"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-									<polyline points="16 17 21 12 16 7" />
-									<line x1="21" y1="12" x2="9" y2="12" />
-								</svg>
-							}
-							iconPosition="start"
-							onClick={handleLogout}
-						/>
-					)}
+					<Button
+						label="Log Out"
+						variant="secondary"
+						icon={
+							<svg
+								width="15"
+								height="15"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+								<polyline points="16 17 21 12 16 7" />
+								<line x1="21" y1="12" x2="9" y2="12" />
+							</svg>
+						}
+						iconPosition="start"
+						onClick={handleLogout}
+					/>
 				</div>
 			</div>
 		</header>

@@ -6,7 +6,7 @@ import { Button } from "@/components/button";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { StatusBadge } from "./components";
 
-const WS_BASE_URL = import.meta.env.VITE_WS_URL || "wss://echo.websocket.org";
+const WS_BASE_URL = import.meta.env.VITE_WS_URL;
 
 interface ChatPageProps {}
 
@@ -68,6 +68,7 @@ const ChatPage: React.FC<ChatPageProps> = () => {
 				{/* Page title & status */}
 				<div className="flex items-center justify-between gap-4">
 					<div>
+						<GoBackIcon onClick={handleGoBack} />
 						<h1 className="text-3xl font-extrabold text-text-heading mb-1">
 							AI Assistant
 						</h1>

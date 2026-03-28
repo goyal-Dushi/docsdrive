@@ -4,7 +4,7 @@ import { createContext, useContext, useState } from "react";
 export interface HeaderConfig {
 	/** Controls whether the Log Out button is visible. Default: true */
 	showLogout?: boolean;
-	/** Override the brand title shown in the header. Default: "Digital Home Binder" */
+	/** Override the brand title shown in the header. Default: "DocsDrive" */
 	title?: string;
 	/** Extra right-side slot rendered next to the logout button */
 	rightSlot?: ReactNode;
@@ -20,7 +20,7 @@ const HeaderContext = createContext<HeaderContextValue | null>(null);
 export function HeaderProvider({ children }: { children: ReactNode }) {
 	const [config, setConfig] = useState<HeaderConfig>({
 		showLogout: true,
-		title: "Digital Home Binder",
+		title: "DocsDrive",
 	});
 
 	return (
