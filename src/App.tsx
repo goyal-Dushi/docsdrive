@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { Route, Switch, useLocation } from "wouter";
 import { AppHeader } from "@/components/header";
 import { HeaderProvider } from "@/context/HeaderContext";
@@ -20,6 +21,7 @@ function Layout() {
 
 	return (
 		<>
+			<Analytics />
 			{!isAuthRoute && <AppHeader />}
 			<Switch>
 				<Route path="/login" component={LoginPage} />
