@@ -1,17 +1,20 @@
-export { default as ChatIcon } from "./ChatSvg";
-export { default as DownloadIcon } from "./DownloadSvg";
-export { default as EditIcon } from "./EditSvg";
-export { default as ExclamationIcon } from "./ErrorSvg";
-export { default as FileIcon } from "./FileSvg";
-export { default as GoBackIcon } from "./GoBackSvg";
+export {
+	AlertCircle as ExclamationIcon,
+	ArrowLeft as GoBackIcon,
+	Download as DownloadIcon,
+	Eye as ViewIcon,
+	FileText as FileIcon,
+	FileX as NoFileIcon,
+	Image as ImgIcon,
+	Loader2 as SpinnerIcon,
+	MessageSquare as ChatIcon,
+	Package as ProductIcon,
+	Pencil as EditIcon,
+	Plus as PlusIcon,
+	RotateCcw as ResyncIcon,
+	Send as SendIcon,
+	Trash2 as TrashIcon,
+	Upload as UploadIcon,
+} from "lucide-react";
+
 export { default as HomeIcon } from "./HomeSvg";
-export { default as ImgIcon } from "./ImgIconSvg";
-export { default as NoFileIcon } from "./NoFileSvg";
-export { default as PlusIcon } from "./PlusSvg";
-export { default as ProductIcon } from "./ProductSvg";
-export { default as ResyncIcon } from "./ResyncSvg";
-export { default as SendIcon } from "./SendSvg";
-export { default as SpinnerIcon } from "./SpinnerSvg";
-export { default as TrashIcon } from "./TrashBinSvg";
-export { default as UploadIcon } from "./UploadSvg";
-export { default as ViewIcon } from "./ViewSvg";
