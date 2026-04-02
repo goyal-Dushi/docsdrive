@@ -7,10 +7,6 @@ import { AuthLogo } from "@/components/header";
 import { useToast } from "@/hooks/useToast";
 import type { ValidationRule } from "@/types";
 
-interface LoginResponse {
-	accessToken: string;
-}
-
 interface FieldConfig {
 	name: "email" | "password";
 	label: string;
@@ -128,6 +124,14 @@ export default function LoginPage() {
 								validations={field.validations}
 							/>
 						))}
+
+						<button
+							type="button"
+							onClick={() => navigate("/forgot-password")}
+							className="text-sm text-primary font-medium hover:underline self-end -mt-2 mb-2 cursor-pointer"
+						>
+							Forgot password?
+						</button>
 
 						<Button
 							label={isPending ? "Signing in…" : "Sign In"}

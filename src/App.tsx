@@ -7,13 +7,14 @@ import {
 	ChatPage,
 	ConfirmSignupPage,
 	DashboardPage,
+	ForgotPwdPage,
 	LoginPage,
 	SignupPage,
 	UploadPage,
 } from "@/pages";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
-const AUTH_ROUTES = ["/login", "/signup", "/confirm-signup"];
+const AUTH_ROUTES = ["/login", "/signup", "/confirm-signup", "/forgot-password"];
 
 function Layout() {
 	const [location] = useLocation();
@@ -26,6 +27,7 @@ function Layout() {
 			<Switch>
 				<Route path="/login" component={LoginPage} />
 				<Route path="/signup" component={SignupPage} />
+				<Route path="/forgot-password" component={ForgotPwdPage} />
 				<Route path="/confirm-signup" component={ConfirmSignupPage} />
 				<ProtectedRoute>
 					<Route path="/bills/:id" component={BillDetailsPage} />
