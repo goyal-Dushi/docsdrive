@@ -3,10 +3,10 @@ import { useLocation } from "wouter";
 import { ExclamationIcon, PlusIcon } from "@/assets";
 import { Button } from "@/components/button";
 import { useHttp } from "@/hooks/useHttp";
-import { type Bill, BillCard, BillCardSkeleton } from "./components";
+import { type Bill, BillCardSkeleton, BillCard } from "./components";
 
 interface BillResponse {
-	data: Bill[];
+	data: Record<string, Bill[]>;
 }
 
 export default function DashboardPage() {
@@ -17,13 +17,13 @@ export default function DashboardPage() {
 		queryKey: ["dashboard-data"],
 		queryFn: async () => {
 			const response =
-				await http.get<BillResponse["data"]>("/getDashboardData");
+				await http.get<{ data: BillResponse["data"] }>("/getDashboardData");
 			return response.data;
 		},
 		retry: 2,
 	});
 
-	const bills = data ?? [];
+	const items = data?.data || [];
 
 	if (isError) {
 		return (
@@ -38,10 +38,9 @@ export default function DashboardPage() {
 	if (isLoading) {
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-				{Array.from({ length: 2 }).map((_, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: skeleton has no stable id
-					<BillCardSkeleton key={`card-${i}`} />
-				))}
+				<BillCardSkeleton />
+				<BillCardSkeleton />
+				<BillCardSkeleton />
 			</div>
 		);
 	}
@@ -68,16 +67,28 @@ export default function DashboardPage() {
 				/>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-				{bills.map((bill) => (
-					<BillCard
-						key={bill.billNo}
-						bill={bill}
-						onChat={() => navigate(`/chat/${bill.billNo}`)}
-						onView={() => navigate(`/bills/${bill.billNo}`)}
-					/>
-				))}
-			</div>
+			{Object.entries(items).map(([date, bills]) => {
+				return (
+					<section key={date} className="space-y-6">
+						<div className="flex my-4 items-center gap-4">
+							<span className="text-black uppercase tracking-[0.35em] text-text-muted">
+								{date}
+							</span>
+							<span className="flex-1 border-t border-dashed border-border/60 border-black" />
+						</div>
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+							{bills.map((bill) => (
+								<BillCard
+									key={bill.billNo}
+									bill={bill}
+									onChat={() => navigate(`/chat/${bill.billNo}`)}
+									onView={() => navigate(`/bills/${bill.billNo}`)}
+								/>
+							))}
+						</div>
+					</section>
+				);
+			})}
 		</>
 	);
 }

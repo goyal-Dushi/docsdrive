@@ -36,7 +36,7 @@ function normalizeError(err: unknown): HttpError {
 }
 
 const env = import.meta.env.MODE;
-
+// console.log("Current environment: ", env);
 const authHttp: XiorInstance = xior.create({
 	baseURL:
 		env === "development"
@@ -90,7 +90,6 @@ export async function uploadToS3(
 	presignedUrl: string,
 	file: File,
 ): Promise<void> {
-	console.log(file, file instanceof File, file.size);
 	const res = await fetch(presignedUrl, {
 		method: "PUT",
 		body: file,

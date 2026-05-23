@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { DownloadIcon, EditIcon, FileIcon, ViewIcon } from "@/assets";
 import { Button, IconButton } from "@/components/button";
 import type { BillDetail } from "@/types/bill";
-import { getBillDate, getFileName, getTotalAmount, getVendor } from "../utils";
+import { getBillDate, getFileName, getTotalAmount, getVendor } from "../../utils";
 
 interface BillSummaryViewProps {
 	bill: BillDetail;

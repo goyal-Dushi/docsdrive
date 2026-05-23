@@ -35,7 +35,6 @@ const useUpdateBill = () => {
 
 	const updateBill = async (data: UpdateBillI) => {
 		const { billNo, products, addedFiles, deletedFiles } = data;
-		console.log("data: ", data);
 
 		// adding new files and data
 		if (addedFiles?.length) {

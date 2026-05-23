@@ -31,9 +31,11 @@ export default function UploadPage() {
 	};
 
 	const isDisabled = isPending || isAnalysisPending;
-	const hasProductImage = products.some((p) => p.imageFile);
+	const incompleteProductData = products.some((p) => {
+		return !p.imageFile || !p.name?.trim();
+	});
 
-	const canUpload = files.length > 0 && hasProductImage && !!billNo;
+	const canUpload = files.length > 0 && !incompleteProductData && !!billNo;
 
 	return (
 		<div className="h-[calc(100dvh-3.5rem)] bg-bg-page flex flex-col overflow-hidden">
@@ -57,7 +59,7 @@ export default function UploadPage() {
 							id="billNo"
 							type="text"
 							value={billNo}
-							onChange={(e) => setBillNo(e.target.value)}
+							onChange={(e) => setBillNo(e.target.value?.trim())}
 							disabled={isDisabled}
 							placeholder="e.g. LG Washing Machine (Noida/Sameer)"
 							className="w-full rounded-2xl border border-border bg-bg-card px-5 py-3 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed"

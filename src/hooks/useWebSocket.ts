@@ -80,8 +80,6 @@ export function useWebSocket({
 					return;
 				}
 
-				console.log("parsed: ", parsed);
-
 				setMessages((prev) => {
 					const last = prev[prev.length - 1];
 

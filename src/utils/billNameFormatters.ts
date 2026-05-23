@@ -1,5 +1,5 @@
 export const encodeBillName = (billName: string) => {
-	return billName.split(" ").join("_").toLowerCase();
+	return billName.trim().split(" ").join("_").toLowerCase();
 };
 
 export const decodeBillName = (billName: string) => {

@@ -14,7 +14,12 @@ import {
 } from "@/pages";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
-const AUTH_ROUTES = ["/login", "/signup", "/confirm-signup", "/forgot-password"];
+const AUTH_ROUTES = [
+	"/login",
+	"/signup",
+	"/confirm-signup",
+	"/forgot-password",
+];
 
 function Layout() {
 	const [location] = useLocation();

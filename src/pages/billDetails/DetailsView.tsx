@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { BillDetail } from "@/types/bill";
-import EditView from "./EditView";
-import ReadOnlyView from "./ReadOnlyView";
+import EditView from "./editView/EditView";
+import ReadOnlyView from "./readOnlyView/ReadOnlyView";
 
 interface DetailsViewProps {
 	data: BillDetail;
