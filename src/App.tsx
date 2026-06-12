@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { Route, Switch, useLocation } from "wouter";
 import { AppHeader } from "@/components/header";
 import { HeaderProvider } from "@/context/HeaderContext";
+import { UserProvider } from "@/context/UserContext";
 import {
 	BillDetailsPage,
 	ChatPage,
@@ -48,8 +49,10 @@ function Layout() {
 
 export default function App() {
 	return (
-		<HeaderProvider>
-			<Layout />
-		</HeaderProvider>
+		<UserProvider>
+			<HeaderProvider>
+				<Layout />
+			</HeaderProvider>
+		</UserProvider>
 	);
 }
