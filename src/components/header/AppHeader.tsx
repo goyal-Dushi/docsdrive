@@ -3,16 +3,19 @@ import { useLocation } from "wouter";
 import { HomeIcon } from "@/assets";
 import { Button } from "@/components/button";
 import { useHeaderConfig } from "@/context/HeaderContext";
+import { useUser } from "@/context/UserContext";
 
 export function AppHeader() {
 	const [, navigate] = useLocation();
 	const { config } = useHeaderConfig();
+	const { logout } = useUser();
 
 	const handleLogout = async () => {
 		try {
 			await signOut({
 				global: true,
 			});
+			logout();
 			navigate("/login");
 		} catch (err) {
 			console.error("Error logging out: ", err);

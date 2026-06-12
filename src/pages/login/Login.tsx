@@ -1,10 +1,11 @@
-import { AuthError, signIn } from "aws-amplify/auth";
+import { AuthError, signIn, getCurrentUser } from "aws-amplify/auth";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/form";
 import { AuthLogo } from "@/components/header";
 import { useToast } from "@/hooks/useToast";
+import { useUser } from "@/context/UserContext";
 import type { ValidationRule } from "@/types";
 
 interface FieldConfig {
@@ -49,6 +50,7 @@ const LOGIN_FIELDS: FieldConfig[] = [
 export default function LoginPage() {
 	const [, navigate] = useLocation();
 	const { showToast } = useToast();
+	const { setUser } = useUser();
 
 	const [isPending, setIsPending] = useState(false);
 	const [form, setForm] = useState<Record<string, string>>({
@@ -81,6 +83,9 @@ export default function LoginPage() {
 				username: form.email,
 				password: form.password,
 			});
+			
+			const currentUser = await getCurrentUser();
+			setUser({ username: currentUser.username });
 			navigate("/dashboard");
 		} catch (err) {
 			if (err instanceof AuthError && err?.name === "NotAuthorizedException") {

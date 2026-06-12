@@ -4,6 +4,7 @@ import { ExclamationIcon, PlusIcon } from "@/assets";
 import { Button } from "@/components/button";
 import { useHttp } from "@/hooks/useHttp";
 import { type Bill, BillCardSkeleton, BillCard } from "./components";
+import { useUser } from "@/context/UserContext";
 
 interface BillResponse {
 	data: Record<string, Bill[]>;
@@ -12,9 +13,10 @@ interface BillResponse {
 export default function DashboardPage() {
 	const [, navigate] = useLocation();
 	const http = useHttp();
+	const { user } = useUser();
 
 	const { data, isLoading, isError, error } = useQuery({
-		queryKey: ["dashboard-data"],
+		queryKey: ["dashboard-data", user?.username],
 		queryFn: async () => {
 			const response =
 				await http.get<{ data: BillResponse["data"] }>("/getDashboardData");
