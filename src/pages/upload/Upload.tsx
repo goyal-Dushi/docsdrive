@@ -59,7 +59,7 @@ export default function UploadPage() {
 							id="billNo"
 							type="text"
 							value={billNo}
-							onChange={(e) => setBillNo(e.target.value?.trim())}
+							onChange={(e) => setBillNo(e.target.value)}
 							disabled={isDisabled}
 							placeholder="e.g. LG Washing Machine (Noida/Sameer)"
 							className="w-full rounded-2xl border border-border bg-bg-card px-5 py-3 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed"
