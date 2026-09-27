@@ -3,9 +3,10 @@ import type { ValidationRule } from "@/types";
 export interface FieldConfig {
 	name: string;
 	label: string;
-	type: "text" | "date" | "number" | "textarea";
+	type: "text" | "date" | "number" | "textarea" | "select";
 	placeholder?: string;
 	rows?: number;
+	options?: string[]; // Used for select dropdowns
 	validations?: ValidationRule[];
 	required?: boolean;
 	gridCols?: 1 | 2; // Used for 2-column layout in EditView
@@ -56,8 +57,15 @@ export const PRODUCT_FIELD_CONFIG: FieldGroup[] = [
 			{
 				name: "category",
 				label: "Category",
-				type: "text",
+				type: "select",
 				gridCols: 2,
+				options: [
+					"Computer & Desk Gear",
+					"Kitchen Applicances",
+					"Family Utilities",
+					"Personal Tech",
+					"Home Maintainance & Care",
+				],
 			},
 		],
 	},

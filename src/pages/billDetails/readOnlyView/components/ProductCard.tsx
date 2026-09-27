@@ -2,7 +2,7 @@ import { useState } from "react";
 import { EditIcon, ProductIcon } from "@/assets";
 import { IconButton } from "@/components/button";
 import type { Product } from "@/types/bill";
-import { PRODUCT_FIELD_CONFIG, type FieldGroup } from "../../ProductFieldsConfig";
+import { PRODUCT_FIELD_CONFIG, type FieldConfig, type FieldGroup } from "../../ProductFieldsConfig";
 
 interface ProductCardProps {
 	product: Product;
@@ -11,8 +11,25 @@ interface ProductCardProps {
 
 const CLOUDFRONT_DOMAIN = import.meta.env.VITE_CLOUDFRONT_DOMAIN;
 
+// Derive the category options from the single source of truth (PRODUCT_FIELD_CONFIG)
+const CATEGORY_OPTIONS =
+	PRODUCT_FIELD_CONFIG.flatMap((group) => group.fields)
+		.find((field) => field.name === "category")
+		?.options ?? [];
+
 const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit }) => {
 	const [rawExpanded, setRawExpanded] = useState(false);
+
+	// If the category value doesn't match any of the allowed options, show a
+	// "Select Option" placeholder instead of the raw value.
+	const displayValue = (field: FieldConfig) => {
+		const raw = product[field.name as keyof Product];
+		if (raw == null || raw === "") return "NA";
+		if (field.name === "category" && !CATEGORY_OPTIONS.includes(String(raw))) {
+			return "Select Option";
+		}
+		return raw;
+	};
 
 	return (
 		<div className="bg-bg-card rounded-2xl border border-border p-6 shadow-xs hover:shadow-sm transition-shadow">
@@ -55,9 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit }) => {
 											{field.label}
 										</dt>
 										<dd className="text-sm text-text-body font-semibold leading-relaxed">
-											{product[field.name as keyof Product] != null && product[field.name as keyof Product] !== ""
-												? product[field.name as keyof Product]
-												: "NA"}
+											{displayValue(field)}
 										</dd>
 									</div>
 								))}
@@ -83,9 +98,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit }) => {
 											{field.label}
 										</dt>
 										<dd className="text-sm text-text-body font-semibold">
-											{product[field.name as keyof Product] != null && product[field.name as keyof Product] !== ""
-												? product[field.name as keyof Product]
-												: "NA"}
+											{displayValue(field)}
 										</dd>
 									</div>
 								))}

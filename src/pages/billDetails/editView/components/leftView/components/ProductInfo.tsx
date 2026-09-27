@@ -40,6 +40,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 											onChange={(v) => updateProduct(idx, field.name as keyof Product, v)}
 											onValidationChange={handleValidationChange}
 											rows={field.rows}
+											options={field.options}
 											validations={field.validations}
 											required={field.required}
 										/>
@@ -51,6 +52,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 											onChange={(v) => updateProduct(idx, nextField.name as keyof Product, v)}
 											onValidationChange={handleValidationChange}
 											rows={nextField.rows}
+											options={nextField.options}
 											validations={nextField.validations}
 											required={nextField.required}
 										/>
@@ -71,6 +73,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 									onChange={(v) => updateProduct(idx, field.name as keyof Product, v)}
 									onValidationChange={handleValidationChange}
 									rows={field.rows}
+									options={field.options}
 									validations={field.validations}
 									required={field.required}
 								/>

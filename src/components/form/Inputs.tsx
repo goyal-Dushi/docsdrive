@@ -3,9 +3,10 @@ import { TextInput } from "./TextInput";
 import { DateInput } from "./DateInput";
 import { NumberInput } from "./NumberInput";
 import { TextArea } from "./TextArea";
+import { SelectInput } from "./SelectInput";
 import type { FormFieldBaseProps } from "@/types";
 
-type InputType = "text" | "date" | "number" | "textarea";
+type InputType = "text" | "date" | "number" | "textarea" | "select";
 
 interface InputsProps extends FormFieldBaseProps {
 	type: InputType;
@@ -13,6 +14,7 @@ interface InputsProps extends FormFieldBaseProps {
 	min?: number; // Specific to NumberInput
 	max?: number; // Specific to NumberInput
 	step?: number; // Specific to NumberInput
+	options?: string[]; // Specific to SelectInput
 }
 
 const Inputs: React.FC<InputsProps> = (props) => {
@@ -25,6 +27,8 @@ const Inputs: React.FC<InputsProps> = (props) => {
 			return <NumberInput {...rest} />;
 		case "textarea":
 			return <TextArea {...rest} />;
+		case "select":
+			return <SelectInput {...rest} />;
 		case "text":
 		default:
 			return <TextInput {...rest} />;
