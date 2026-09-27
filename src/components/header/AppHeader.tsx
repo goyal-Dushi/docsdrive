@@ -38,7 +38,15 @@ export function AppHeader() {
 				</button>
 
 				{/* Right slot + logout */}
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-4">
+					<a
+						href="http://dushyantgoyal.dgwebdex.com"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-xs font-medium text-text-muted hover:text-text-heading transition-colors hidden sm:block"
+					>
+						dgwebdex
+					</a>
 					<Button
 						label="Log Out"
 						variant="secondary"
