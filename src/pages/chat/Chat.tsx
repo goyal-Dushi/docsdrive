@@ -7,14 +7,14 @@ import { PageHeader, ChatBox } from "./components";
 
 const WS_BASE_URL = import.meta.env.VITE_WS_URL;
 
-interface ChatPageProps {}
+interface ChatPageProps { }
 
 const ChatPage: React.FC<ChatPageProps> = () => {
 	const [, navigate] = useLocation();
 	const { billNo } = useParams<{ billNo: string }>();
 	const storageKey = `chat_${billNo}`;
 
-	const { messages, status, sendMessage, disconnect } = useWebSocket({
+	const { messages, status, isSending, sendMessage, disconnect } = useWebSocket({
 		billNo,
 		url: WS_BASE_URL,
 		storageKey,
@@ -76,6 +76,7 @@ const ChatPage: React.FC<ChatPageProps> = () => {
 					handleSend={handleSend}
 					handleKeyDown={handleKeyDown}
 					status={status}
+					isSending={isSending}
 				/>
 
 				{/* Go Back button */}
@@ -83,7 +84,7 @@ const ChatPage: React.FC<ChatPageProps> = () => {
 					<Button
 						label="Exit Chat"
 						variant="secondary"
-						className="text-error! border-error! hover:bg-error-bg! py-3 min-w-[160px] font-bold"
+						className="text-error! border-error! hover:bg-error-bg! py-3 min-w-40 font-bold"
 						icon={<GoBackIcon />}
 						iconPosition="start"
 						onClick={handleGoBack}

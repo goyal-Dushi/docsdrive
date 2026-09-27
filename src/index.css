@@ -42,3 +42,9 @@
 		"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
 		sans-serif;
 }
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

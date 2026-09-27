@@ -73,10 +73,10 @@ export default function DashboardPage() {
 				return (
 					<section key={date} className="space-y-6">
 						<div className="flex my-4 items-center gap-4">
-							<span className="text-black uppercase tracking-[0.35em] text-text-muted">
+							<span className="text-black uppercase tracking-[0.35em] text-muted">
 								{date}
 							</span>
-							<span className="flex-1 border-t border-dashed border-border/60 border-black" />
+							<span className="flex-1 border-t border-dashed border-border/60" />
 						</div>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 							{bills.map((bill) => (

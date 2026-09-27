@@ -32,6 +32,7 @@ export function useWebSocket({
 	const wsRef = useRef<WebSocket | null>(null);
 	const [, navigate] = useLocation();
 	const [status, setStatus] = useState<WsStatus>("disconnected");
+	const [isSending, setIsSending] = useState(false);
 
 	// Restore history from localStorage on mount
 	const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -72,12 +73,25 @@ export function useWebSocket({
 			};
 
 			ws.onmessage = (event: MessageEvent) => {
+				// A completely empty / whitespace-only frame signals the end of
+				// the streamed response — re-enable input and bail out.
+				if (!event.data || !String(event.data).trim()) {
+					setIsSending(false);
+					return;
+				}
+
 				let parsed = null;
 
 				try {
 					parsed = JSON.parse(event.data);
 				} catch {
 					return;
+				}
+
+				// Response is complete — re-enable input. Done OUTSIDE the
+				// setMessages updater so the state change is reliable.
+				if (parsed.action === "done" || !parsed?.action) {
+					setIsSending(false);
 				}
 
 				setMessages((prev) => {
@@ -107,9 +121,14 @@ export function useWebSocket({
 					}
 
 					if (parsed.action === "done" || !parsed?.action) {
-						if (last?.isStreaming) {
+						// Finalize the streaming message, dropping it entirely
+						// if it ended up empty (avoids an empty bubble at the end).
+						if (last?.role === "assistant") {
 							const updated = prev.slice(0, -1);
-							return [...updated, { ...last, isStreaming: false }];
+							if (last.content.trim()) {
+								return [...updated, { ...last, isStreaming: false }];
+							}
+							return updated;
 						}
 					}
 
@@ -149,6 +168,7 @@ export function useWebSocket({
 					content,
 				};
 				setMessages((prev) => [...prev, userMsg]);
+				setIsSending(true);
 				wsRef.current.send(
 					JSON.stringify({
 						action: "ragchat",
@@ -169,5 +189,5 @@ export function useWebSocket({
 		setStatus("disconnected");
 	}, [storageKey]);
 
-	return { messages, status, sendMessage, disconnect };
+	return { messages, status, isSending, sendMessage, disconnect };
 }

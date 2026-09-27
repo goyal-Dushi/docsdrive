@@ -10,6 +10,7 @@ interface ChatBoxProps {
 	handleSend: () => void;
 	handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 	status: string;
+	isSending: boolean;
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
@@ -20,6 +21,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 	handleSend,
 	handleKeyDown,
 	status,
+	isSending,
 }) => {
 	return (
 		<div
@@ -33,6 +35,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 				handleSend={handleSend}
 				handleKeyDown={handleKeyDown}
 				status={status}
+				isSending={isSending}
 			/>
 		</div>
 	);

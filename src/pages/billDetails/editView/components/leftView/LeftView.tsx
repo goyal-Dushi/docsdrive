@@ -30,7 +30,7 @@ const LeftView: React.FC<LeftViewProps> = ({
 					className="bg-bg-card rounded-2xl border border-border p-8 shadow-sm"
 				>
 					<div className="flex items-center gap-4 mb-8 pb-6 border-b border-border">
-						<div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 border border-[var(--color-border)]">
+						<div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 border border-border">
 							{product.s3key ? (
 								<img
 									src={`${CLOUDFRONT_DOMAIN}/${product.s3key}`}
@@ -66,7 +66,7 @@ const LeftView: React.FC<LeftViewProps> = ({
 						/>
 					</div>
 
-					<div className="mt-10 pt-8 border-t border-[var(--color-border)]">
+					<div className="mt-10 pt-8 border-t border-border">
 						<TextArea
 							name={`${idx}-rawText`}
 							label="Remaining Raw Text"
